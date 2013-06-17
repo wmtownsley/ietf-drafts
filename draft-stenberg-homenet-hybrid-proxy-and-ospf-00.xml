@@ -1,7 +1,7 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Mon Jun 17 14:00:16 2013 mstenber
+Last modified: Mon Jun 17 14:01:44 2013 mstenber
 Edit time:     229 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -363,7 +363,7 @@ Edit time:     229 min
         2001:db8:2:2::/64 for WLAN. </t>
 
         <t>IR1 is assumed to be reachable at 2001:db8:1:1::1 and IR2 at
-      2001:db8::2. </t>
+      2001:db8:2:1::1. </t>
       
 
         <t>Each router wants to be called 'router' due to lack of
@@ -404,14 +404,14 @@ DZ {address=2001:db8:1:1::1,
 (from IR2)
 RN {name="router-2"}
 
-DZ {address=2001:db8::2, b=1, 
+DZ {address=2001:db8:2:1::1, b=1, 
     zone="lan.router-2.example.com."}
-DZ {address=2001:db8::2, 
+DZ {address=2001:db8:2:1::1, 
     zone="1.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa."}
 
-DZ {address=2001:db8::2, b=1, 
+DZ {address=2001:db8:2:1::1, b=1, 
     zone="wlan.router-2.example.com."}
-DZ {address=2001:db8::2, 
+DZ {address=2001:db8:2:1::1, 
     zone="2.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa."}
 
         </artwork>
@@ -430,7 +430,7 @@ b._dns_sd._udp PTR lan.router-2
 b._dns_sd._udp PTR wlan.router-2
 
 router AAAA 2001:db8:1:1::1
-router-2 AAAA 2001:db8::2
+router-2 AAAA 2001:db8:2:1::1
 
 router NS router
 router-2 NS router-2
