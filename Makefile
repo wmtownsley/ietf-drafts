@@ -4,8 +4,8 @@
 # Author: Markus Stenberg <markus stenberg@iki.fi>
 #
 # Created:       Mon Jun 17 04:40:32 2013 mstenber
-# Last modified: Mon Jun 17 13:45:37 2013 mstenber
-# Edit time:     6 min
+# Last modified: Mon Jun 17 14:00:33 2013 mstenber
+# Edit time:     7 min
 #
 
 DRAFTS=draft-stenberg-homenet-hybrid-proxy-and-ospf-00.txt
@@ -20,6 +20,7 @@ all: $(DRAFTS)
 	XML_LIBRARY=$(XML_LIBRARY) xml2rfc $< --text --html
 
 push: all
+	git push
 	rsync -a draft*.html employees.org:WWW
 
 clean:
