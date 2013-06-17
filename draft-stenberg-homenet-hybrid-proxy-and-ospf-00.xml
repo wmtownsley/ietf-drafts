@@ -1,0 +1,325 @@
+<?xml version='1.0' ?>
+<!-- 
+Created:       Mon Jun 17 04:55:57 2013 mstenber
+Last modified: Mon Jun 17 08:26:11 2013 mstenber
+Edit time:     149 min
+-->
+<!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
+
+<?rfc autobreaks="yes"?>
+<?rfc compact="yes"?> 
+<?rfc strict='yes'?>
+<?rfc subcompact="no"?>
+<?rfc symrefs="yes"?> 
+<?rfc toc="yes"?> 
+<?rfc tocindent="yes"?> 
+
+<rfc 
+    ipr='trust200902'
+    docName='draft-stenberg-homenet-hybrid-proxy-and-ospf-00'
+    category='std'
+    >
+  <front>
+    <title abbrev="Hybrid Proxy OSPFv3 Zeroconf">
+      Hybrid Unicast/Multicast DNS-Based Service Discovery
+      Auto-Configuration Using OSPF
+    </title>
+    <author initials="M" surname="Stenberg" fullname="Markus Stenberg">
+      <address>
+        <postal>
+          <street/>
+          <city>Helsinki</city>
+          <code>00930</code>
+          <country>Finland</country>
+        </postal>
+        <email>markus.stenberg@iki.fi</email>
+      </address>
+    </author>
+    <date month="June" year="2013" />
+    <workgroup>Homenet Working Group</workgroup>
+    <keyword>IPv6</keyword>
+    <keyword>Homenet</keyword>
+    <keyword>OSPFv3</keyword>
+    <keyword>DNS-SD</keyword>
+    <keyword>mDNS</keyword>
+    <abstract>
+
+      <t>This document details how a proxy functioning between Unicast
+      DNS-Based Service Discovery and Multicast DNS can be automatically
+      configured using automatically configured routing protocol.</t>
+
+    </abstract>
+  </front>
+  <middle>
+    <section title="Introduction">
+
+      <t>Section 3 ("Hybrid Proxy Operation") of <xref
+      target="I-D.cheshire-mdnsext-hybrid"/> describes how to translate
+      queries from Unicast DNS-Based Service Discovery described in <xref
+      target="RFC6763"/> to Multicast DNS described in <xref
+      target="RFC6762"/>, and how to filter the responses and translate
+      them back to unicast DNS.</t>
+
+      <t>This document describes what sort of configuration the
+      participating DNS servers require, as well as how it can be provided
+      using auto-configured OSPFv3 described in <xref
+      target="I-D.ietf-ospf-ospfv3-autoconfig"/> and a naming scheme which
+      does not even need to be same across the network.
+      </t>
+
+    </section>
+
+
+    <section anchor="kwd" title='Requirements language'>
+
+      <t>In this document, the key words "MAY", "MUST, "MUST NOT",
+      "OPTIONAL", "RECOMMENDED", "SHOULD", and "SHOULD NOT", are to be
+      interpreted as described in <xref target='RFC2119' />.</t>
+
+    </section>
+
+    <section title="Automated naming scheme">
+      <t>Beyond the low-level translation mechanism between unicast and
+      multicast service discovery, the hybrid proxy draft <xref
+      target="I-D.cheshire-mdnsext-hybrid"/> describes just that there have
+      to be NS records pointing to hybrid proxy responsible for each link
+      within the covered network.</t>
+
+      <section title="Per-link DNS-SD zone names">
+
+        <t>How to name the links of a whole network in automated fashion? Two
+        different approaches seem obvious:
+
+        <list style="numbers">
+          <t>
+            Unique link name based - (unique-link).(domain).
+          </t>
+          <t>
+            Router and link name - (link).(router).(domain).
+          </t>
+        </list>
+
+        The first choice is appealing as it can be much more friendly
+        (especially given manual configuration) - for example, it could
+        mean just lan.example.com and wlan.example.com for a simple home
+        network. The second choice, on the other hand, has a nice property
+        of being localized; as long as router name can be made unique, the
+        link name choices are local to each link owning router, as opposed
+        to global within the network.</t>
+
+        <t>The type of naming scheme to use can be left as implementation
+        option. And the actual names themselves SHOULD be also overridable,
+        if the end-user wants to customize them in some way. </t>
+
+      </section>
+
+      <section anchor="conflict" title="Conflict resolution">
+
+        <t>Regardless of which per-link zone naming scheme is chosen, any
+        naming-related choice on a router may have conflicts in the
+        network. </t>
+
+        <t>We use similar conflict resolution scheme as described in the
+        prefix assignment draft<xref
+        target="I-D.arkko-homenet-prefix-assignment"/>. That is, if a
+        conflict is encountered, the router with highest router ID MUST
+        keep the name they have chosen. The one(s) with lower router ID
+        MUST either try different one, or choose not to publish the name
+        altogether.</t>
+
+        <t>If router needs to pick a different name, any algorithm works,
+        although simple algorithm choice is just like the one described in
+        Multicast DNS<xref target="RFC6762"/>: append -2, -3, and so forth,
+        until there are no conflicts in the network for the given name.</t>
+
+      </section>
+
+      <section title="Reasonable defaults">
+
+        <t>Note that any manual configuration MUST override the defaults.</t>
+
+        <section title="Network-wide unique link name">
+          <t>It is not obvious how to produce network-wide unique link
+          names for the (link).(domain) scheme. One option would be to base
+          it on type of physical network layer, and then hope that the
+          number of the networks won't be significant (e.g. "ethernet", or
+          "wlan"). </t>
+
+          <t>In general network-wide unique link names should be only used
+          in small networks. Given larger network, after conflict
+          resolution, finding which network is 'ethernet-42.example.com'
+          may be challenging.</t>
+        </section>
+
+        <section anchor="lname" title="Link name">
+
+          <t>Recommendation for (link) portion of (link).(router).(domain)
+          is to use either physical network layer type as base, possibly
+          even just interface name on the router, if it's descriptive
+          enough, for example, eth0.router1.example.com and
+          wlan0.router1.example.com may be good enough. </t>
+
+        </section>
+        <section anchor="rname" title="Router name">
+
+          <t>Recommendation is to use some short form which indicates the
+          type of router it is, for example, "openwrt.example.com"</t>
+
+        </section>
+      </section>
+
+    </section>
+    <section title="New OSPFv3 auto-configuration TLVs">
+      <section anchor="delegated-zone-tlv" title="DNS Delegated Zone TLV">
+
+        <t>This TLV is effectively a combined NS and A/AAAA record for a
+        zone. </t>
+
+        <figure>
+          <artwork>
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      TBD-BY-IANA-1            |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                           Address                             |
+|                          (16 bytes)                           |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Reserved   |S|B| Zone (DNS label sequence - variable length)   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                      DNS Delegated Zone TLV
+          </artwork>
+        </figure>
+        <t>
+          <list style="hanging">
+
+            <t hangText="Address"> field is IPv6 address (e.g. 2001:db8::3) or
+            IPv4 address mapped to IPv6 address (e.g. ::FFFF:127.0.0.1) where the
+            DNS server responsible for Zone can be found. 
+            </t>
+
+            <t hangText="S"> indicates that this delegated zone consists of a
+            full DNS-SD domain, which should be used as base for DNS-SD domain
+            enumeration (that is, (field)._dns-sd._udp.(zone) exists).</t>
+
+            <t hangText="B"> indicates that this delegated zone should be
+            included in DNS-SD browse path for the network's domain.</t>
+            
+            <t hangText="Zone"> is the label sequence of the zone, encoded
+            according to section 3.1. ("Name space definitions") of <xref
+            target="RFC1035"/>. </t>
+
+          </list>
+        </t>
+
+      </section>
+      <section anchor="domain-name-tlv" title="Domain Name TLV">
+
+        <t>This TLV is used to indicate the (domain) to be used, and it is
+        a result of manual configuration on one or more routers. If
+        multiple routers advertise different ones, the conflict resolution
+        rules in <xref target="conflict"/> should result in only the one
+        with highest router ID advertising one, eventually. In case of such
+        conflict, user SHOULD be notified somehow about this, if possible,
+        using the configuration interface or some other notification
+        mechanism for the routers. </t>
+
+        <figure>
+          <artwork>
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      TBD-BY-IANA-2            |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Name (not even null terminated - variable length)              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                         Domain Name TLV
+          </artwork>
+        </figure>
+
+        <t>By default, if no router advertises domain name TLV, hard-coded
+        default (TBD) should be used.</t>
+
+      </section>
+      <section anchor="router-name-tlv" title="Router Name TLV">
+        <t>This TLV is used to advertise a router's name. After the
+        conflict resolution procedure described in <xref target="conflict"/>
+        finishes, there should be exactly zero to one routers publishing
+        each router name.</t>
+
+        <figure>
+          <artwork>
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      TBD-BY-IANA-3            |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Name (not even null terminated - variable length)              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                         Router Name TLV
+          </artwork>
+        </figure>
+
+        <t>If the router name has been configured manually, and there is a
+        conflict, user SHOULD be notified somehow about this, if possible,
+        using the configuration interface or some other notification
+        mechanism for the routers.</t>
+      </section>
+    </section>
+
+    <section title="Zone generation algorithm">
+      TBD
+    </section>
+
+    <section title="Security Considerations">
+
+      <t>There is a trade-off between security and zero-configuration in
+      general; if used routing protocol is not authenticated (and in
+      zero-configuration case, it most likely is not), it is vulnerable to
+      local spoofing attacks. We assume that this scheme is used either
+      within (lower layer) secured networks, or with
+      not-quite-zero-configuration routing protocol set-up which has
+      authentication.</t>
+
+    </section>
+
+
+    <section anchor="iana" title="IANA Considerations">
+
+      <t>This document makes two allocations out of the OSPFv3 Auto-
+      Configuration (AC) LSA TLV namespace <xref
+      target="I-D.ietf-ospf-ospfv3-autoconfig"/>:
+
+      <list style="symbols">
+
+        <t>The DNS Delegated Zone TLV in <xref
+        target="delegated-zone-tlv"/> takes the value TBD-BY-IANA-1
+        (suggested value is 4).</t>
+
+        <t>The Domain NAme TLV in <xref target="domain-name-tlv"/> takes
+        the value TBD-BY-IANA-2 (suggested value is 5).</t>
+
+        <t>The Router NAme TLV in <xref target="router-name-tlv"/> takes
+        the value TBD-BY-IANA-2 (suggested value is 6).</t>
+
+      </list>
+      </t>
+    </section>
+
+  </middle>
+  <back>
+    <references title="Normative references">
+      <?rfc include="reference.I-D.draft-cheshire-mdnsext-hybrid-01.xml"?>  
+      <?rfc include="reference.I-D.ietf-ospf-ospfv3-autoconfig.xml"?>
+      <?rfc include="reference.RFC.1035.xml"?>
+      <?rfc include="reference.RFC.2119.xml"?>
+    </references>
+    <references title="Informative references">
+      <?rfc include="reference.RFC.6762.xml"?>
+      <?rfc include="reference.RFC.6763.xml"?>
+      <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-01.xml"?>  
+    </references>
+  </back>
+</rfc>
