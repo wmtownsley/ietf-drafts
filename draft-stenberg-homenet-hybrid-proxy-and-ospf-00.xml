@@ -1,20 +1,20 @@
 <?xml version='1.0' ?>
-<!-- 
+<!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Mon Jun 17 08:26:11 2013 mstenber
-Edit time:     149 min
+Last modified: Mon Jun 17 13:40:34 2013 mstenber
+Edit time:     227 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
 <?rfc autobreaks="yes"?>
-<?rfc compact="yes"?> 
+<?rfc compact="yes"?>
 <?rfc strict='yes'?>
 <?rfc subcompact="no"?>
-<?rfc symrefs="yes"?> 
-<?rfc toc="yes"?> 
-<?rfc tocindent="yes"?> 
+<?rfc symrefs="yes"?>
+<?rfc toc="yes"?>
+<?rfc tocindent="yes"?>
 
-<rfc 
+<rfc
     ipr='trust200902'
     docName='draft-stenberg-homenet-hybrid-proxy-and-ospf-00'
     category='std'
@@ -64,8 +64,9 @@ Edit time:     149 min
       participating DNS servers require, as well as how it can be provided
       using auto-configured OSPFv3 described in <xref
       target="I-D.ietf-ospf-ospfv3-autoconfig"/> and a naming scheme which
-      does not even need to be same across the network.
-      </t>
+      does not even need to be same across the network.  The scheme can be
+      used to provision both forward and reverse DNS zones which employ
+      hybrid proxy for heavy lifting.</t>
 
     </section>
 
@@ -85,7 +86,7 @@ Edit time:     149 min
       to be NS records pointing to hybrid proxy responsible for each link
       within the covered network.</t>
 
-      <section title="Per-link DNS-SD zone names">
+      <section title="Per-link DNS-SD forward zone names">
 
         <t>How to name the links of a whole network in automated fashion? Two
         different approaches seem obvious:
@@ -100,12 +101,11 @@ Edit time:     149 min
         </list>
 
         The first choice is appealing as it can be much more friendly
-        (especially given manual configuration) - for example, it could
-        mean just lan.example.com and wlan.example.com for a simple home
+        (especially given manual configuration). For example, it could mean
+        just lan.example.com and wlan.example.com for a simple home
         network. The second choice, on the other hand, has a nice property
-        of being localized; as long as router name can be made unique, the
-        link name choices are local to each link owning router, as opposed
-        to global within the network.</t>
+        of being local choice as long as router name can be made
+        unique.</t>
 
         <t>The type of naming scheme to use can be left as implementation
         option. And the actual names themselves SHOULD be also overridable,
@@ -124,8 +124,9 @@ Edit time:     149 min
         target="I-D.arkko-homenet-prefix-assignment"/>. That is, if a
         conflict is encountered, the router with highest router ID MUST
         keep the name they have chosen. The one(s) with lower router ID
-        MUST either try different one, or choose not to publish the name
-        altogether.</t>
+        MUST either try different one (that is not in use at all according
+        to the current link state information), or choose not to publish
+        the name altogether.</t>
 
         <t>If router needs to pick a different name, any algorithm works,
         although simple algorithm choice is just like the one described in
@@ -136,22 +137,39 @@ Edit time:     149 min
 
       <section title="Reasonable defaults">
 
-        <t>Note that any manual configuration MUST override the defaults.</t>
+        <t>Note that any manual configuration, which SHOULD be possible,
+        MUST override the defaults provided here or chosen by the creator
+        of the implementation.</t>
 
-        <section title="Network-wide unique link name">
+        <section title="Network-wide unique link name (scheme 1)">
+
           <t>It is not obvious how to produce network-wide unique link
-          names for the (link).(domain) scheme. One option would be to base
-          it on type of physical network layer, and then hope that the
-          number of the networks won't be significant (e.g. "ethernet", or
-          "wlan"). </t>
+          names for the (unique-link).(domain) scheme. One option would be
+          to base it on type of physical network layer, and then hope that
+          the number of the networks won't be significant enough to confuse
+          (e.g. "lan", or "wlan"). </t>
 
           <t>In general network-wide unique link names should be only used
           in small networks. Given larger network, after conflict
-          resolution, finding which network is 'ethernet-42.example.com'
+          resolution, finding which network is 'lan-42.example.com'
           may be challenging.</t>
         </section>
 
-        <section anchor="lname" title="Link name">
+        <section anchor="rname" title="Router name (scheme 2)">
+
+          <t>Recommendation is to use some short form which indicates the
+          type of router it is, for example, "openwrt.example.com". As the
+          name is visible to users, it should be kept as short as
+          possible. If theory even more exact model could be
+          helpful, for example, "openwrt-buffalo-wzr-600-dhr.example.com". 
+          In practise, though, providing some other records indicating
+          exact router information (and access to management UI) might be
+          more sensible. 
+          </t>
+
+        </section>
+
+        <section anchor="lname" title="Link name (scheme 2)">
 
           <t>Recommendation for (link) portion of (link).(router).(domain)
           is to use either physical network layer type as base, possibly
@@ -160,20 +178,26 @@ Edit time:     149 min
           wlan0.router1.example.com may be good enough. </t>
 
         </section>
-        <section anchor="rname" title="Router name">
-
-          <t>Recommendation is to use some short form which indicates the
-          type of router it is, for example, "openwrt.example.com"</t>
-
-        </section>
       </section>
 
     </section>
     <section title="New OSPFv3 auto-configuration TLVs">
+
+      <t>To implement this specification fully, support for following three
+      different new OSPFv3 auto-configuration LSAs is needed. However,
+      only the DNS Delegated Zone TLVs MUST be supported, and the other two
+      SHOULD be supported. </t>
+
       <section anchor="delegated-zone-tlv" title="DNS Delegated Zone TLV">
 
         <t>This TLV is effectively a combined NS and A/AAAA record for a
-        zone. </t>
+        zone. It MUST be supported by implementations conforming to this
+        specification. Implementations SHOULD provide forward zone per link
+        (or optimizing a bit, zone per link with Multicast DNS
+        traffic). Implementations MAY provide reverse zone per prefix using
+        this same mechanism. If multiple routers advertise same reverse
+        zone, it should be assumed that they all have access to the
+        link with that prefix.</t>
 
         <figure>
           <artwork>
@@ -197,19 +221,26 @@ Edit time:     149 min
 
             <t hangText="Address"> field is IPv6 address (e.g. 2001:db8::3) or
             IPv4 address mapped to IPv6 address (e.g. ::FFFF:127.0.0.1) where the
-            DNS server responsible for Zone can be found. 
+            DNS server responsible for Zone can be found.
             </t>
 
-            <t hangText="S"> indicates that this delegated zone consists of a
-            full DNS-SD domain, which should be used as base for DNS-SD domain
-            enumeration (that is, (field)._dns-sd._udp.(zone) exists).</t>
+            <t hangText="S"> indicates that this delegated zone consists of
+            a full DNS-SD domain, which should be used as base for DNS-SD
+            domain enumeration (that is, (field)._dns-sd._udp.(zone)
+            exists). Forward zones MAY have this set. Reverse zones MUST
+            NOT have this set. This can be used to provision DNS search
+            path to clients.</t>
 
             <t hangText="B"> indicates that this delegated zone should be
-            included in DNS-SD browse path for the network's domain.</t>
-            
+            included in (domain) DNS-SD list of domains recommended for
+            browsing at b._dns-sd._udp.(domain). Local forward zones SHOULD
+            have this set. Reverse zones SHOULD NOT have this set.</t>
+
             <t hangText="Zone"> is the label sequence of the zone, encoded
             according to section 3.1. ("Name space definitions") of <xref
-            target="RFC1035"/>. </t>
+            target="RFC1035"/>. Note that name compression is not required
+            here (and would not have any point in any case), as we encode
+            the zones one by one. The zone MUST end with empty label. </t>
 
           </list>
         </t>
@@ -225,6 +256,12 @@ Edit time:     149 min
         conflict, user SHOULD be notified somehow about this, if possible,
         using the configuration interface or some other notification
         mechanism for the routers. </t>
+
+        <t>This TLV SHOULD be supported if at all possible; even on routers
+        without manual configuration options, being able to read the domain
+        name provided by different router could make the user experience
+        better.</t>
+
 
         <figure>
           <artwork>
@@ -249,6 +286,12 @@ Edit time:     149 min
         finishes, there should be exactly zero to one routers publishing
         each router name.</t>
 
+        <t>This TLV SHOULD be supported if at all possible; otherwise, if
+        another router chooses to use the (link).(router) naming scheme,
+        without manual configuration options, being able to read the domain
+        name provided by different router could make the user experience
+        better.</t>
+
         <figure>
           <artwork>
 0                   1                   2                   3
@@ -269,8 +312,141 @@ Edit time:     149 min
       </section>
     </section>
 
-    <section title="Zone generation algorithm">
-      TBD
+    <section title="Example configuration">
+
+      <t>Let's assume home network that looks like this:</t>
+
+      <figure>
+        <artwork>
+       |[0]
+    +-----+
+    | CER |
+    +-----+
+ [1]/    \[2]
+   /      \
++-----+ +-----+
+| IR1 |-| IR2 |
++-----+ +-----+
+ |[3]|   |[4]|
+        </artwork>
+      </figure>
+
+      <t>We're not really interested about links [0], [1] and [2], or the
+      links between IRs. Given the optimization described in <xref
+      target="delegated-zone-tlv"/>, they should not produce anything to
+      OSPF state (and therefore to DNS either) as there isn't any Multicast
+      DNS traffic there.
+      </t>
+
+      <t>The user-visible set of links are [3] and [4];
+      each consisting of a LAN and WLAN link. 
+
+      We assume that ISP provides 2001:db8::/48 prefix to be delegated in
+      the home via [0].
+      </t>
+      
+      <t>Given implementation that chooses to use the second naming scheme
+      (link).(router).(domain), and no configuration whatsoever, here's
+      what happens (the steps are interleaved in practise but illustrated
+      here in order):</t>
+      <t>
+      <list style="numbers">
+          
+        <t>OSPFv3 auto-configuration takes place, routers get their
+        router IDs. For ease of illustration, CER winds up with 2, IR1
+        with 3, and IR2 with 1. </t>
+        
+        <t>Prefix delegation takes place. IR1 winds up with
+        2001:db8:1:1::/64 for LAN and 
+        2001:db8:1:2::/64 for WLAN. IR2 winds up with
+        2001:db8:2:1::/64 for LAN and 
+        2001:db8:2:2::/64 for WLAN. </t>
+
+        <t>IR1 is assumed to be reachable at 2001:db8:1:1::1 and IR2 at
+      2001:db8::2. </t>
+      
+
+        <t>Each router wants to be called 'router' due to lack of
+        branding in drafts. They announce that using the router name TLV
+        defined in <xref target="router-name-tlv" />. They also
+        advertise their local zones, but as that information may change,
+        it's omitted here.</t>
+        
+        <t>Conflict resolution ensues. As IR1 has highest router ID, it
+        becomes "router". CER and IR2 have to rename, and (depending on
+        timing) one of them becomes "router-2" and other one
+        "router-3". Let us assume IR2 is "router-2". During conflict
+        resolution, each router publishes TLVs for it's own set of
+        delegated zones. </t>
+
+      </list>
+
+      Once there is no longer any conflict in the system, we wind up with
+      following TLVs within OSPF (RN is used as abbreviation for Router
+      Name, and DZ for Delegated Zone TLVs):
+      </t>
+      
+      <figure>
+        <artwork>
+(from IR1)
+RN {name="router"}
+
+DZ {address=2001:db8:1:1::1, b=1, 
+    zone="lan.router.example.com."}
+DZ {address=2001:db8:1:1::1, 
+    zone="1.0.0.0.1.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa."}
+
+DZ {address=2001:db8:1:1::1, b=1, 
+    zone="wlan.router.example.com."}
+DZ {address=2001:db8:1:1::1, 
+    zone="2.0.0.0.1.0.0.0.8.b.d.0.1.0.0.2..ip6.arpa."}
+
+(from IR2)
+RN {name="router-2"}
+
+DZ {address=2001:db8::2, b=1, 
+    zone="lan.router-2.example.com."}
+DZ {address=2001:db8::2, 
+    zone="1.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa."}
+
+DZ {address=2001:db8::2, b=1, 
+    zone="wlan.router-2.example.com."}
+DZ {address=2001:db8::2, 
+    zone="2.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa."}
+
+        </artwork>
+      </figure>
+
+      <t>In the end, we should wind up with following zone for
+      (domain) which is example.com in this case, available at all routers,
+      just based on dumping the delegated zone TLVs as NS+AAAA records, and
+      optionally domain list browse entry for DNS-SD:</t>
+      <figure>
+        <artwork>
+b._dns_sd._udp PTR lan.router
+b._dns_sd._udp PTR wlan.router
+
+b._dns_sd._udp PTR lan.router-2
+b._dns_sd._udp PTR wlan.router-2
+
+router AAAA 2001:db8:1:1::1
+router-2 AAAA 2001:db8::2
+
+router NS router
+router-2 NS router-2
+
+1.0.0.0.1.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa. NS router-2
+2.0.0.0.1.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa. NS router-2
+1.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa. NS router-2
+2.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa. NS router-2
+        </artwork>
+      </figure>
+
+
+      <t>Internally, the router may interpret the TLVs as it chooses to, as
+      long as externally defined behavior follows semantics of what's given
+      in the above.</t>
+
     </section>
 
     <section title="Security Considerations">
@@ -302,7 +478,7 @@ Edit time:     149 min
         the value TBD-BY-IANA-2 (suggested value is 5).</t>
 
         <t>The Router NAme TLV in <xref target="router-name-tlv"/> takes
-        the value TBD-BY-IANA-2 (suggested value is 6).</t>
+        the value TBD-BY-IANA-3 (suggested value is 6).</t>
 
       </list>
       </t>
@@ -311,7 +487,7 @@ Edit time:     149 min
   </middle>
   <back>
     <references title="Normative references">
-      <?rfc include="reference.I-D.draft-cheshire-mdnsext-hybrid-01.xml"?>  
+      <?rfc include="reference.I-D.draft-cheshire-mdnsext-hybrid-01.xml"?>
       <?rfc include="reference.I-D.ietf-ospf-ospfv3-autoconfig.xml"?>
       <?rfc include="reference.RFC.1035.xml"?>
       <?rfc include="reference.RFC.2119.xml"?>
@@ -319,7 +495,7 @@ Edit time:     149 min
     <references title="Informative references">
       <?rfc include="reference.RFC.6762.xml"?>
       <?rfc include="reference.RFC.6763.xml"?>
-      <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-01.xml"?>  
+      <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-01.xml"?>
     </references>
   </back>
 </rfc>
