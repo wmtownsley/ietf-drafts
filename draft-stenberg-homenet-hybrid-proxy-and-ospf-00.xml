@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Mon Jun 17 14:01:44 2013 mstenber
-Edit time:     229 min
+Last modified: Mon Jun 17 14:27:30 2013 mstenber
+Edit time:     248 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -312,8 +312,55 @@ Edit time:     229 min
       </section>
     </section>
 
+    <section title="Desirable router behavior">
+
+      <section title="DNS search path">
+        <t>The routers following this specification SHOULD provide the used
+        (domain) as one item in the search path to it's clients, so that
+        DNS-SD browsing will work correctly. They also SHOULD include any
+        DNS Delegated Zone TLVs' zones, that have S bit set. </t>
+      </section>
+
+      <section title="Hybrid proxy">
+
+        <t>The hybrid proxy implementation SHOULD support both forward
+        zones, and IPv4 and IPv6 reverse zones. It SHOULD also detect
+        whether or not there are any Multicast DNS entities on a link, and
+        make that information available to OSPF daemon.</t>
+
+        <t>Hybrid proxy SHOULD also publish it's own name via Multicast DNS
+        (both forward A/AAAA records, as well as reverse PTR records) to
+        facilitate applications that trace network topology. 
+        </t>
+
+
+      </section>
+      <section title="OSPF daemon">
+
+        <t>OSPF daemon should avoid publishing TLVs about links that have
+        no traffic to keep the DNS-SD browse domain list as concise as
+        possible. It also SHOULD NOT publish delegated zones for links that
+        it does not have highest router ID that supports this
+        specification. (Support for this specification can be deduced by
+        e.g. presence of any TLVs from this draft advertised by a router.)
+        </t>
+
+        <t>OSPF daemon (or other entity with access to the TLVs) SHOULD
+        generate zone information for DNS implementation that will be used
+        to serve the (domain) zone to clients. Domain Name TLV described in
+        <xref target="domain-name-tlv"/> should be used as base for the
+        zone, and then all DNS Delegated Zones described in <xref
+        target="delegated-zone-tlv"/> should be used to produce the rest of
+        the entries in zone (see <xref target="example-dns-zone"/> for example
+        interpretation of the TLVs in <xref target="example-ospf"/>.</t>
+
+      </section>
+      
+    </section>
+
     <section title="Example configuration">
 
+<section title="Topology">
       <t>Let's assume home network that looks like this:</t>
 
       <figure>
@@ -345,6 +392,11 @@ Edit time:     229 min
       the home via [0].
       </t>
       
+</section>
+
+
+<section title="OSPF-DNS interaction">
+
       <t>Given implementation that chooses to use the second naming scheme
       (link).(router).(domain), and no configuration whatsoever, here's
       what happens (the steps are interleaved in practise but illustrated
@@ -380,10 +432,14 @@ Edit time:     229 min
         delegated zones. </t>
 
       </list>
+      </t>
+    </section>
 
-      Once there is no longer any conflict in the system, we wind up with
-      following TLVs within OSPF (RN is used as abbreviation for Router
-      Name, and DZ for Delegated Zone TLVs):
+    <section anchor="example-ospf" title="OSPF state">
+
+      <t>Once there is no longer any conflict in the system, we wind up
+      with following TLVs within OSPF (RN is used as abbreviation for
+      Router Name, and DZ for Delegated Zone TLVs):
       </t>
       
       <figure>
@@ -417,6 +473,8 @@ DZ {address=2001:db8:2:1::1,
         </artwork>
       </figure>
 
+    </section>
+    <section anchor="example-dns-zone" title="DNS zone">
       <t>In the end, we should wind up with following zone for
       (domain) which is example.com in this case, available at all routers,
       just based on dumping the delegated zone TLVs as NS+AAAA records, and
@@ -441,11 +499,11 @@ router-2 NS router-2
 2.0.0.0.2.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa. NS router-2.example.com.
         </artwork>
       </figure>
-
-
       <t>Internally, the router may interpret the TLVs as it chooses to, as
       long as externally defined behavior follows semantics of what's given
       in the above.</t>
+
+    </section>
 
     </section>
 
@@ -474,10 +532,10 @@ router-2 NS router-2
         target="delegated-zone-tlv"/> takes the value TBD-BY-IANA-1
         (suggested value is 4).</t>
 
-        <t>The Domain NAme TLV in <xref target="domain-name-tlv"/> takes
+        <t>The Domain Name TLV in <xref target="domain-name-tlv"/> takes
         the value TBD-BY-IANA-2 (suggested value is 5).</t>
 
-        <t>The Router NAme TLV in <xref target="router-name-tlv"/> takes
+        <t>The Router Name TLV in <xref target="router-name-tlv"/> takes
         the value TBD-BY-IANA-3 (suggested value is 6).</t>
 
       </list>
@@ -491,10 +549,10 @@ router-2 NS router-2
       <?rfc include="reference.I-D.ietf-ospf-ospfv3-autoconfig.xml"?>
       <?rfc include="reference.RFC.1035.xml"?>
       <?rfc include="reference.RFC.2119.xml"?>
-    </references>
-    <references title="Informative references">
       <?rfc include="reference.RFC.6762.xml"?>
       <?rfc include="reference.RFC.6763.xml"?>
+    </references>
+    <references title="Informative references">
       <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-01.xml"?>
     </references>
   </back>
