@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 12:07:13 2013 mstenber
-Edit time:     311 min
+Last modified: Tue Jun 18 12:08:10 2013 mstenber
+Edit time:     312 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -600,14 +600,15 @@ router-2 NS router-2
       statically configured DNS zones), or as part of zeroconf OSPFv3
       configured set of proxies.</t>
 
-      <t>Sample usage case:
+      <t>Sample usage case:</t>
       <figure>
         <artwork>
 # sudo lua hp.lua eth0 eth1
 .. no output ..
         </artwork>
       </figure>
-      Given the command, hybrid proxy is started for interfaces eth0 and
+
+      <t>Given the command, hybrid proxy is started for interfaces eth0 and
       eth1, and it will publish DNS zones l-eth0.r-router.home,
       l-eth1.r-router.home (and home router, and default forward behavior)
       in DNS port. It has -h option for seeing various options that can be
