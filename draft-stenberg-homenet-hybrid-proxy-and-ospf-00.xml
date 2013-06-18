@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Mon Jun 17 14:27:30 2013 mstenber
-Edit time:     248 min
+Last modified: Tue Jun 18 09:05:06 2013 mstenber
+Edit time:     275 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -64,9 +64,17 @@ Edit time:     248 min
       participating DNS servers require, as well as how it can be provided
       using auto-configured OSPFv3 described in <xref
       target="I-D.ietf-ospf-ospfv3-autoconfig"/> and a naming scheme which
-      does not even need to be same across the network.  The scheme can be
-      used to provision both forward and reverse DNS zones which employ
-      hybrid proxy for heavy lifting.</t>
+      does not even need to be same across the whole covered network. The
+      scheme can be used to provision both forward and reverse DNS zones
+      which employ hybrid proxy for heavy lifting.</t>
+
+      <t>We go through the mandatory specification of the language used in
+      <xref target="kwd"/>, then describe what needs to be configured in
+      hybrid proxies and participating DNS servers across the network in
+      <xref target="what"/>. How the data is exchanged in OSPFv3 is
+      described in <xref target="how"/>. Finally, some overall notes on
+      desired behavior of different router components is mentioned in <xref
+      target="howto"/>. </t>
 
     </section>
 
@@ -79,12 +87,46 @@ Edit time:     248 min
 
     </section>
 
-    <section title="Automated naming scheme">
+    <section anchor="what" title="Hybrid proxy - what to configure">
+
       <t>Beyond the low-level translation mechanism between unicast and
       multicast service discovery, the hybrid proxy draft <xref
       target="I-D.cheshire-mdnsext-hybrid"/> describes just that there have
       to be NS records pointing to hybrid proxy responsible for each link
       within the covered network.</t>
+
+      <t>In practise, what we want, is actually forward and reverse zone
+      delegation to the appropriate router running hybrid proxy and without
+      any conflicts in the per-link forward zone names.</t>
+
+      <t>The links to be covered is also non-trivial choice; we can use the
+      border discovery functionality (if available) to determine internal
+      and external links. Or we can use OSPFv3 presence (or lack of it) on
+      a link to determine internal links within the covered network, and
+      some other signs (depending on the deployment) such as DHCPv6 Prefix
+      Delegation to determine external links that should not be
+      covered.</t>
+
+      <section anchor="conflict" title="Conflict resolution with OSPF">
+
+        <t>Any naming-related choice on a router may have conflicts in the
+        network. </t>
+
+        <t>We use similar conflict resolution scheme as described in the
+        prefix assignment draft<xref
+        target="I-D.arkko-homenet-prefix-assignment"/>. That is, if a
+        conflict is encountered, the router with highest router ID MUST
+        keep the name they have chosen. The one(s) with lower router ID
+        MUST either try different one (that is not in use at all according
+        to the current link state information), or choose not to publish
+        the name altogether.</t>
+
+        <t>If router needs to pick a different name, any algorithm works,
+        although simple algorithm choice is just like the one described in
+        Multicast DNS<xref target="RFC6762"/>: append -2, -3, and so forth,
+        until there are no conflicts in the network for the given name.</t>
+
+      </section>
 
       <section title="Per-link DNS-SD forward zone names">
 
@@ -113,28 +155,6 @@ Edit time:     248 min
 
       </section>
 
-      <section anchor="conflict" title="Conflict resolution">
-
-        <t>Regardless of which per-link zone naming scheme is chosen, any
-        naming-related choice on a router may have conflicts in the
-        network. </t>
-
-        <t>We use similar conflict resolution scheme as described in the
-        prefix assignment draft<xref
-        target="I-D.arkko-homenet-prefix-assignment"/>. That is, if a
-        conflict is encountered, the router with highest router ID MUST
-        keep the name they have chosen. The one(s) with lower router ID
-        MUST either try different one (that is not in use at all according
-        to the current link state information), or choose not to publish
-        the name altogether.</t>
-
-        <t>If router needs to pick a different name, any algorithm works,
-        although simple algorithm choice is just like the one described in
-        Multicast DNS<xref target="RFC6762"/>: append -2, -3, and so forth,
-        until there are no conflicts in the network for the given name.</t>
-
-      </section>
-
       <section title="Reasonable defaults">
 
         <t>Note that any manual configuration, which SHOULD be possible,
@@ -160,12 +180,19 @@ Edit time:     248 min
           <t>Recommendation is to use some short form which indicates the
           type of router it is, for example, "openwrt.example.com". As the
           name is visible to users, it should be kept as short as
-          possible. If theory even more exact model could be
-          helpful, for example, "openwrt-buffalo-wzr-600-dhr.example.com". 
-          In practise, though, providing some other records indicating
-          exact router information (and access to management UI) might be
-          more sensible. 
+          possible. If theory even more exact model could be helpful, for
+          example, "openwrt-buffalo-wzr-600-dhr.example.com".  In practise,
+          though, providing some other records indicating exact router
+          information (and access to management UI) might be more sensible.
           </t>
+
+          <t>If scheme 2 is used, and there is no desire to implement
+          conflict resolution related TLV described in <xref
+          target="router-name-tlv"/>, a safe default might be to default to
+          router ID; that is, use as router name value such as r-(router ID
+          as single 32-bit number). It is guaranteed to be unique across
+          the network, but not as user-friendly as the descriptive router
+          name promoted here.</t>
 
         </section>
 
@@ -181,11 +208,11 @@ Edit time:     248 min
       </section>
 
     </section>
-    <section title="New OSPFv3 auto-configuration TLVs">
+    <section anchor="how" title="OSPFv3 auto-configuration TLVs">
 
       <t>To implement this specification fully, support for following three
-      different new OSPFv3 auto-configuration LSAs is needed. However,
-      only the DNS Delegated Zone TLVs MUST be supported, and the other two
+      different new OSPFv3 auto-configuration TLVs is needed. However, only
+      the DNS Delegated Zone TLVs MUST be supported, and the other two
       SHOULD be supported. </t>
 
       <section anchor="delegated-zone-tlv" title="DNS Delegated Zone TLV">
@@ -232,7 +259,7 @@ Edit time:     248 min
             path to clients.</t>
 
             <t hangText="B"> indicates that this delegated zone should be
-            included in (domain) DNS-SD list of domains recommended for
+            included in network's DNS-SD list of domains recommended for
             browsing at b._dns-sd._udp.(domain). Local forward zones SHOULD
             have this set. Reverse zones SHOULD NOT have this set.</t>
 
@@ -248,14 +275,14 @@ Edit time:     248 min
       </section>
       <section anchor="domain-name-tlv" title="Domain Name TLV">
 
-        <t>This TLV is used to indicate the (domain) to be used, and it is
-        a result of manual configuration on one or more routers. If
-        multiple routers advertise different ones, the conflict resolution
-        rules in <xref target="conflict"/> should result in only the one
-        with highest router ID advertising one, eventually. In case of such
-        conflict, user SHOULD be notified somehow about this, if possible,
-        using the configuration interface or some other notification
-        mechanism for the routers. </t>
+        <t>This TLV is used to indicate the base (domain) to be used for
+        the network, and it is a result of manual optional configuration on
+        one or more routers. If multiple routers advertise different ones,
+        the conflict resolution rules in <xref target="conflict"/> should
+        result in only the one with highest router ID advertising one,
+        eventually. In case of such conflict, user SHOULD be notified
+        somehow about this, if possible, using the configuration interface
+        or some other notification mechanism for the routers. </t>
 
         <t>This TLV SHOULD be supported if at all possible; even on routers
         without manual configuration options, being able to read the domain
@@ -312,7 +339,7 @@ Edit time:     248 min
       </section>
     </section>
 
-    <section title="Desirable router behavior">
+    <section anchor="howto" title="Desirable router behavior">
 
       <section title="DNS search path">
         <t>The routers following this specification SHOULD provide the used
@@ -338,9 +365,9 @@ Edit time:     248 min
       <section title="OSPF daemon">
 
         <t>OSPF daemon should avoid publishing TLVs about links that have
-        no traffic to keep the DNS-SD browse domain list as concise as
-        possible. It also SHOULD NOT publish delegated zones for links that
-        it does not have highest router ID that supports this
+        no Multicast DNS traffic to keep the DNS-SD browse domain list as
+        concise as possible. It also SHOULD NOT publish delegated zones for
+        links that it does not have highest router ID that supports this
         specification. (Support for this specification can be deduced by
         e.g. presence of any TLVs from this draft advertised by a router.)
         </t>
@@ -357,6 +384,60 @@ Edit time:     248 min
       </section>
       
     </section>
+
+    <section title="Security Considerations">
+
+      <t>There is a trade-off between security and zero-configuration in
+      general; if used routing protocol is not authenticated (and in
+      zero-configuration case, it most likely is not), it is vulnerable to
+      local spoofing attacks. We assume that this scheme is used either
+      within (lower layer) secured networks, or with
+      not-quite-zero-configuration routing protocol set-up which has
+      authentication.</t>
+
+      <t>If some sort of dynamic inclusion of links to be covered using
+      border discovery or such is used, then effectively service discovery
+      will share fate with border discovery (and also security issues if
+      any).</t>
+
+    </section>
+
+
+    <section anchor="iana" title="IANA Considerations">
+
+      <t>This document makes two allocations out of the OSPFv3 Auto-
+      Configuration (AC) LSA TLV namespace <xref
+      target="I-D.ietf-ospf-ospfv3-autoconfig"/>:
+
+      <list style="symbols">
+
+        <t>The DNS Delegated Zone TLV in <xref
+        target="delegated-zone-tlv"/> takes the value TBD-BY-IANA-1
+        (suggested value is 4).</t>
+
+        <t>The Domain Name TLV in <xref target="domain-name-tlv"/> takes
+        the value TBD-BY-IANA-2 (suggested value is 5).</t>
+
+        <t>The Router Name TLV in <xref target="router-name-tlv"/> takes
+        the value TBD-BY-IANA-3 (suggested value is 6).</t>
+
+      </list>
+      </t>
+    </section>
+
+  </middle>
+  <back>
+    <references title="Normative references">
+      <?rfc include="reference.I-D.draft-cheshire-mdnsext-hybrid-01.xml"?>
+      <?rfc include="reference.I-D.ietf-ospf-ospfv3-autoconfig.xml"?>
+      <?rfc include="reference.RFC.1035.xml"?>
+      <?rfc include="reference.RFC.2119.xml"?>
+      <?rfc include="reference.RFC.6762.xml"?>
+      <?rfc include="reference.RFC.6763.xml"?>
+    </references>
+    <references title="Informative references">
+      <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-01.xml"?>
+    </references>
 
     <section title="Example configuration">
 
@@ -507,53 +588,6 @@ router-2 NS router-2
 
     </section>
 
-    <section title="Security Considerations">
 
-      <t>There is a trade-off between security and zero-configuration in
-      general; if used routing protocol is not authenticated (and in
-      zero-configuration case, it most likely is not), it is vulnerable to
-      local spoofing attacks. We assume that this scheme is used either
-      within (lower layer) secured networks, or with
-      not-quite-zero-configuration routing protocol set-up which has
-      authentication.</t>
-
-    </section>
-
-
-    <section anchor="iana" title="IANA Considerations">
-
-      <t>This document makes two allocations out of the OSPFv3 Auto-
-      Configuration (AC) LSA TLV namespace <xref
-      target="I-D.ietf-ospf-ospfv3-autoconfig"/>:
-
-      <list style="symbols">
-
-        <t>The DNS Delegated Zone TLV in <xref
-        target="delegated-zone-tlv"/> takes the value TBD-BY-IANA-1
-        (suggested value is 4).</t>
-
-        <t>The Domain Name TLV in <xref target="domain-name-tlv"/> takes
-        the value TBD-BY-IANA-2 (suggested value is 5).</t>
-
-        <t>The Router Name TLV in <xref target="router-name-tlv"/> takes
-        the value TBD-BY-IANA-3 (suggested value is 6).</t>
-
-      </list>
-      </t>
-    </section>
-
-  </middle>
-  <back>
-    <references title="Normative references">
-      <?rfc include="reference.I-D.draft-cheshire-mdnsext-hybrid-01.xml"?>
-      <?rfc include="reference.I-D.ietf-ospf-ospfv3-autoconfig.xml"?>
-      <?rfc include="reference.RFC.1035.xml"?>
-      <?rfc include="reference.RFC.2119.xml"?>
-      <?rfc include="reference.RFC.6762.xml"?>
-      <?rfc include="reference.RFC.6763.xml"?>
-    </references>
-    <references title="Informative references">
-      <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-01.xml"?>
-    </references>
   </back>
 </rfc>
