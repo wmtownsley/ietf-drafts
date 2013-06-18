@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 09:05:06 2013 mstenber
-Edit time:     275 min
+Last modified: Tue Jun 18 11:04:13 2013 mstenber
+Edit time:     296 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -587,7 +587,85 @@ router-2 NS router-2
     </section>
 
     </section>
+    
+    <section title="Why not just proxy Multicast DNS?">
+
+      <t>Over the time number of people have asked me about how, why, and
+      if we should proxy (originally) link-local Multicast DNS over
+      multiple links.</t>
+
+      <t>At some point I meant to write a draft about this, but I think I'm
+      too lazy; so some notes left here for general amusement of people
+      (and to be removed if this ever moves beyond discussion piece).</t>
+
+      <section title="General problems">
+
+        <t>There are two main reasons why Multicast DNS is not proxyable in
+        the general case.</t>
+
+        <t>First reason is the conflict resolution depends on ordering
+        which depends on the RRsets staying constant. That is not possible
+        across multiple links (due to e.g. link-local addresses having to
+        be filtered). Therefore, conflict resolution breaks, or at least
+        requires ugly hacks to work around.</t>
+        
+        <t>A workaround for this is to make sure that in conflict
+        resolution, propagated resources always loses. Due to conflict
+        handling ordering logic, and the arbitrary order in which the
+        original records may be in, this is non-trivial. </t>
+        
+        <t>Second reason is timing, which is relatively tight in the
+        conflict resolution phase, especially given lossy and/or high
+        latency networks.</t>
+
+      </section>
+      <section title="Stateless proxying problems">
+
+        <t>In general, typical stateless proxy has to involve flooding, as
+        Multicast DNS in general assumes that most messages are received by
+        every client. And it won't scale very well, as a result. 
+        </t>
+
+        <t>The conflict resolution is also harder without state. It may
+        result in Multicast DNS responder being in constant probe-announce
+        loop, when it receives altered records, notes that it's the one
+        that should own the record. Given stateful proxying, this would be
+        just a transient problem but designing stateless proxy that won't
+        cause this is non-trivial exercise.</t>
+
+      </section>
+
+      <section title="Stateful proxying problems">
 
 
+        <t>One option is to write proxy that learns state from one link,
+        and propagates it in some way to other links in the network. </t>
+
+        <t>A big problem with this case lies in the fact that due to
+        conflict resolution concerns above, it is easy to accidentally send
+        packets that will (possibly due to client mobility) wind up at the
+        originator of the service, who will then perform renaming. That can
+        be alleviated, though, given clever hacks with conflict resolution
+        order. </t>
+
+        <t>The stateful proxying may be also too slow to occur within the
+        timeframe allocated for announcing, leading to excessive later
+        renamings based on delayed finding of duplicate services with same
+        name</t>
+
+        <t>A work-around exists for this though; if the game doesn't work
+        for you, don't play it. One option would be simply not to propagate
+        ANY records for which conflict has seen even once. This would work,
+        but result in rather fragile, lossy service discovery
+        infrastructure.</t>
+
+        <t>There are some other small nits too; for example, Passive
+        Observation Of Failure (POOF) will not work given stateful
+        proxying. Therefore, it leads to requiring somewhat shorter TTLs,
+        perhaps. </t>
+
+      </section>
+    </section>
+    
   </back>
 </rfc>
