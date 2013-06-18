@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 12:09:33 2013 mstenber
-Edit time:     313 min
+Last modified: Tue Jun 18 16:01:20 2013 mstenber
+Edit time:     329 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -95,10 +95,6 @@ Edit time:     313 min
       to be NS records pointing to hybrid proxy responsible for each link
       within the covered network.</t>
 
-      <t>In practise, what we want, is actually forward and reverse zone
-      delegation to the appropriate router running hybrid proxy and without
-      any conflicts in the per-link forward zone names.</t>
-
       <t>The links to be covered is also non-trivial choice; we can use the
       border discovery functionality (if available) to determine internal
       and external links. Or we can use OSPFv3 presence (or lack of it) on
@@ -106,6 +102,14 @@ Edit time:     313 min
       some other signs (depending on the deployment) such as DHCPv6 Prefix
       Delegation to determine external links that should not be
       covered.</t>
+
+      <t>For each covered link we want forward DNS zone delegation to an
+      appropriate router which is connected to a link, and running hybrid
+      proxy. We also want to populate reverse DNS zone similarly per each
+      prefix in use. Links' forward DNS zone names should be unique. There
+      should be DNS-SD domain list provided for the domain which contains
+      each physical link only once, regardless of how many routers it
+      contains.</t>
 
       <section anchor="conflict" title="Conflict resolution with OSPF">
 
@@ -224,7 +228,10 @@ Edit time:     313 min
         traffic). Implementations MAY provide reverse zone per prefix using
         this same mechanism. If multiple routers advertise same reverse
         zone, it should be assumed that they all have access to the
-        link with that prefix.</t>
+        link with that prefix. However, as noted in <xref
+        target="ospf-req"/>, mainly only the router with highest router ID
+        on the link should publish this TLV.</t>
+
 
         <figure>
           <artwork>
@@ -246,9 +253,9 @@ Edit time:     313 min
         <t>
           <list style="hanging">
 
-            <t hangText="Address"> field is IPv6 address (e.g. 2001:db8::3) or
-            IPv4 address mapped to IPv6 address (e.g. ::FFFF:127.0.0.1) where the
-            DNS server responsible for Zone can be found.
+            <t hangText="Address"> field is IPv6 address (e.g. 2001:db8::3)
+            or IPv4 address mapped to IPv6 address (e.g. ::FFFF:192.0.2.1)
+            where the DNS server responsible for Zone can be found.
             </t>
 
             <t hangText="S"> indicates that this delegated zone consists of
@@ -362,7 +369,7 @@ Edit time:     313 min
 
 
       </section>
-      <section title="OSPF daemon">
+      <section anchor="ospf-req" title="OSPF daemon">
 
         <t>OSPF daemon should avoid publishing TLVs about links that have
         no Multicast DNS traffic to keep the DNS-SD browse domain list as
