@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 11:04:13 2013 mstenber
-Edit time:     296 min
+Last modified: Tue Jun 18 12:07:13 2013 mstenber
+Edit time:     311 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -586,6 +586,42 @@ router-2 NS router-2
 
     </section>
 
+    </section>
+
+    <section title="Implementation">
+      <t>There is an implementation of this draft (and transitively also
+      of <xref target="I-D.cheshire-mdnsext-hybrid"/>) at <eref
+      target="https://github.com/fingon/hnet-core/">hnet-core github
+      repository</eref> which contains variety of other homenet WG-related
+      things' implementation too.</t>
+      
+      <t>hp.lua binary can be used to start hybrid proxy either as
+      one-router stand-alone implementation (that can be used to e.g. use
+      statically configured DNS zones), or as part of zeroconf OSPFv3
+      configured set of proxies.</t>
+
+      <t>Sample usage case:
+      <figure>
+        <artwork>
+# sudo lua hp.lua eth0 eth1
+.. no output ..
+        </artwork>
+      </figure>
+      Given the command, hybrid proxy is started for interfaces eth0 and
+      eth1, and it will publish DNS zones l-eth0.r-router.home,
+      l-eth1.r-router.home (and home router, and default forward behavior)
+      in DNS port. It has -h option for seeing various options that can be
+      set, notable one being --ospf (use OSPFv3 autoconfigured hnet
+      infrastructure). </t>
+
+      <t>
+        Disclaimer: The set-up of third-party libraries etc to get the
+        implementation running may be painful and is omitted here. Use of
+        ready UML NetKit-based test environment or building image for a
+        real router using <eref
+        target="https://github.com/fingon/hnet/">hnet github
+        repository</eref> is recommended.
+      </t>
     </section>
     
     <section title="Why not just proxy Multicast DNS?">
