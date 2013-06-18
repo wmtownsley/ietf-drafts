@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 12:08:10 2013 mstenber
-Edit time:     312 min
+Last modified: Tue Jun 18 12:09:33 2013 mstenber
+Edit time:     313 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -610,10 +610,10 @@ router-2 NS router-2
 
       <t>Given the command, hybrid proxy is started for interfaces eth0 and
       eth1, and it will publish DNS zones l-eth0.r-router.home,
-      l-eth1.r-router.home (and home router, and default forward behavior)
-      in DNS port. It has -h option for seeing various options that can be
-      set, notable one being --ospf (use OSPFv3 autoconfigured hnet
-      infrastructure). </t>
+      l-eth1.r-router.home (and home zone with relevant DNS-SD sub-zone,
+      and default forward behavior) in DNS port. It has -h option for
+      seeing various options that can be set, notable one being --ospf (use
+      OSPFv3 autoconfigured hnet infrastructure). </t>
 
       <t>
         Disclaimer: The set-up of third-party libraries etc to get the
