@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 16:01:20 2013 mstenber
-Edit time:     329 min
+Last modified: Tue Jun 18 16:10:09 2013 mstenber
+Edit time:     333 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -709,6 +709,16 @@ router-2 NS router-2
         perhaps. </t>
 
       </section>
+    </section>
+
+    <section title="Acknowledgements">
+
+      <t>Thanks to Stuart Cheshire for the original hybrid proxy draft and
+      interesting discussion in Orlando, where I was finally convinced that
+      stateful Multicast DNS proxying is a bad idea.</t>
+
+      <t>Also thanks to Mark Baugher and Ole Troan for review comments.</t>
+
     </section>
     
   </back>
