@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Wed Jun 19 12:30:59 2013 mstenber
-Edit time:     376 min
+Last modified: Wed Jun 19 14:55:15 2013 mstenber
+Edit time:     385 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -266,8 +266,8 @@ Edit time:     376 min
 
             <t hangText="Address"> field is IPv6 address (e.g. 2001:db8::3)
             or IPv4 address mapped to IPv6 address (e.g. ::FFFF:192.0.2.1)
-            where the DNS server responsible for Zone can be found. If the
-            address field is all zeros, the Zone is under global DNS
+            where the authoritative DNS server for Zone can be found. If
+            the address field is all zeros, the Zone is under global DNS
             hierarchy and can be found using normal recursive name lookup
             starting at the authoritative root servers (This is mostly
             relevant with the S bit below).
@@ -437,7 +437,10 @@ Edit time:     376 min
         <t>The hybrid proxy implementation SHOULD support both forward
         zones, and IPv4 and IPv6 reverse zones. It SHOULD also detect
         whether or not there are any Multicast DNS entities on a link, and
-        make that information available to OSPF daemon.</t>
+        make that information available to OSPF daemon. This can be done by
+        (for example) passively monitoring traffic on all covered links,
+        and doing infrequent service enumerations on links that seem to be
+        up, but without any Multicast DNS traffic (if so desired). </t>
 
         <t>Hybrid proxy SHOULD also publish it's own name via Multicast DNS
         (both forward A/AAAA records, as well as reverse PTR records) to
