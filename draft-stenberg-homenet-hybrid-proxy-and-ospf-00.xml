@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Wed Jun 19 12:01:34 2013 mstenber
-Edit time:     353 min
+Last modified: Wed Jun 19 12:30:59 2013 mstenber
+Edit time:     376 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -66,7 +66,8 @@ Edit time:     353 min
       target="I-D.ietf-ospf-ospfv3-autoconfig"/> and a naming scheme which
       does not even need to be same across the whole covered network. The
       scheme can be used to provision both forward and reverse DNS zones
-      which employ hybrid proxy for heavy lifting.</t>
+      which employ hybrid proxy for heavy lifting.
+      </t>
 
       <t>We go through the mandatory specification of the language used in
       <xref target="kwd"/>, then describe what needs to be configured in
@@ -119,7 +120,7 @@ Edit time:     353 min
       we may want to pretend to be local but are in different scope, or
       controlled by different organization. For example, a home user might
       see both home domain's services (TBD-TLD), as well as ISP's services
-      (at isp.example.com).</t>
+      under isp.example.com.</t>
 
       <section anchor="conflict" title="Conflict resolution with OSPF">
 
@@ -296,6 +297,7 @@ Edit time:     353 min
         </t>
 
       </section>
+
       <section anchor="domain-name-tlv" title="Domain Name TLV">
 
         <t>This TLV is used to indicate the base (domain) to be used for
@@ -339,11 +341,11 @@ Edit time:     353 min
         finishes, there should be exactly zero to one routers publishing
         each router name.</t>
 
-        <t>This TLV SHOULD be supported if at all possible; otherwise, if
-        another router chooses to use the (link).(router) naming scheme,
-        without manual configuration options, being able to read the domain
-        name provided by different router could make the user experience
-        better.</t>
+        <t>This TLV SHOULD be supported if at all possible. If not
+        supported, and another router chooses to use the (link).(router)
+        naming scheme with this router's name, the contents of the
+        network's domain may look misleading (but due to conflict
+        resolution of per-link zones, still functional).</t>
 
         <figure>
           <artwork>
@@ -362,6 +364,62 @@ Edit time:     353 min
         conflict, user SHOULD be notified somehow about this, if possible,
         using the configuration interface or some other notification
         mechanism for the routers.</t>
+      </section>
+
+
+      <section anchor="dns-server-tlv" title="DNS Server TLV">
+
+        <t>This TLV is used to announce address of a fallback recursive DNS
+        server (provided by e.g. ISP). If the DNS server
+        implementations used in the network are not full recursive resolver
+        implementations, they may respond to network-specific queries
+        within network, and forward the rest to the provided DNS
+        servers. Even recursive resolver implementations may want to use
+        these servers, if available, for better caching and therefore more
+        responsive user experience.</t>
+
+        <t>Typically, these addresses are gleaned from (for example) a
+        DHCPv4/DHCPv6 exchange, or from Router Advertisements. </t>
+
+        <t>Any router on the home network can publish 0-N of these TLVs,
+        and the order in which they are used is not defined (we assume that
+        the DNS view of the world is consistent; this may not be true in
+        all cases).</t>
+
+        <t>This TLV SHOULD be supported by routers, but the routers (and
+        DNS servers in the network) MUST be able to cope even in the
+        absence of the TLV. This can be handled by (for example) DNS
+        servers providing recursive resolving fallback functionality, or
+        defaulting to some known global recursive resolver.</t>
+
+        <figure>
+          <artwork>
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      TBD-BY-IANA-4            |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                           Address                             |
+|                          (16 bytes)                           |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                         DNS Server TLV
+          </artwork>
+        </figure>
+
+        <t>The address may be again either IPv4 or IPv6 address, with the
+        IPv4 address encoded under the ::FFFF:/96 prefix.</t>
+        
+        <t>It is important to note that if the network's domain forward or
+        reverse resolution will not work globally, using network-external
+        DNS server directly is not good. Therefore the network's local DNS
+        servers should be announced to clients in e.g. DHCPv4/DHCPv6/RA,
+        and then only those DNS servers can use the contents of this TLV as
+        fall-back for non-local resolution if so desired. How these local
+        DNS server addresses are propagated within home network is outside
+        the scope of this document</t>
+
       </section>
     </section>
 
@@ -446,6 +504,9 @@ Edit time:     353 min
 
         <t>The Router Name TLV in <xref target="router-name-tlv"/> takes
         the value TBD-BY-IANA-3 (suggested value is 6).</t>
+
+        <t>The DNS Server TLV in <xref target="dns-server-tlv"/> takes
+        the value TBD-BY-IANA-4 (suggested value is 7).</t>
 
       </list>
       </t>
@@ -562,7 +623,7 @@ DZ {address=2001:db8:1:1::1,
 DZ {address=2001:db8:1:1::1, b=1, 
     zone="wlan.router.example.com."}
 DZ {address=2001:db8:1:1::1, 
-    zone="2.0.0.0.1.0.0.0.8.b.d.0.1.0.0.2..ip6.arpa."}
+    zone="2.0.0.0.1.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa."}
 
 (from IR2)
 RN {name="router-2"}
