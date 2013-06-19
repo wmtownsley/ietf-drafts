@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Tue Jun 18 16:10:09 2013 mstenber
-Edit time:     333 min
+Last modified: Wed Jun 19 12:01:34 2013 mstenber
+Edit time:     353 min
 -->
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
 
@@ -106,10 +106,20 @@ Edit time:     333 min
       <t>For each covered link we want forward DNS zone delegation to an
       appropriate router which is connected to a link, and running hybrid
       proxy. We also want to populate reverse DNS zone similarly per each
-      prefix in use. Links' forward DNS zone names should be unique. There
-      should be DNS-SD domain list provided for the domain which contains
-      each physical link only once, regardless of how many routers it
-      contains.</t>
+      prefix in use. Links' forward DNS zone names should be unique.</t>
+
+      <t>There should be DNS-SD domain list provided for the network's
+      domain which contains domain for each physical link only once,
+      regardless of how many routers and hybrid proxy implementations are
+      connected to it. </t>
+
+      <t>Yet another case to consider is the list of DNS-SD domains that we
+      want clients to enumerate for domain lists. Typically, it contains
+      only that the network's domain, but there may be also other networks
+      we may want to pretend to be local but are in different scope, or
+      controlled by different organization. For example, a home user might
+      see both home domain's services (TBD-TLD), as well as ISP's services
+      (at isp.example.com).</t>
 
       <section anchor="conflict" title="Conflict resolution with OSPF">
 
@@ -255,7 +265,11 @@ Edit time:     333 min
 
             <t hangText="Address"> field is IPv6 address (e.g. 2001:db8::3)
             or IPv4 address mapped to IPv6 address (e.g. ::FFFF:192.0.2.1)
-            where the DNS server responsible for Zone can be found.
+            where the DNS server responsible for Zone can be found. If the
+            address field is all zeros, the Zone is under global DNS
+            hierarchy and can be found using normal recursive name lookup
+            starting at the authoritative root servers (This is mostly
+            relevant with the S bit below).
             </t>
 
             <t hangText="S"> indicates that this delegated zone consists of
@@ -263,7 +277,9 @@ Edit time:     333 min
             domain enumeration (that is, (field)._dns-sd._udp.(zone)
             exists). Forward zones MAY have this set. Reverse zones MUST
             NOT have this set. This can be used to provision DNS search
-            path to clients.</t>
+            path to clients for non-local services (such as those provided
+            by ISP, or other manually configured service providers).
+            </t>
 
             <t hangText="B"> indicates that this delegated zone should be
             included in network's DNS-SD list of domains recommended for
@@ -283,19 +299,19 @@ Edit time:     333 min
       <section anchor="domain-name-tlv" title="Domain Name TLV">
 
         <t>This TLV is used to indicate the base (domain) to be used for
-        the network, and it is a result of manual optional configuration on
-        one or more routers. If multiple routers advertise different ones,
-        the conflict resolution rules in <xref target="conflict"/> should
+        the network.  If multiple routers advertise different ones, the
+        conflict resolution rules in <xref target="conflict"/> should
         result in only the one with highest router ID advertising one,
         eventually. In case of such conflict, user SHOULD be notified
         somehow about this, if possible, using the configuration interface
         or some other notification mechanism for the routers. </t>
 
-        <t>This TLV SHOULD be supported if at all possible; even on routers
-        without manual configuration options, being able to read the domain
-        name provided by different router could make the user experience
-        better.</t>
-
+        <t>This TLV SHOULD be supported if at all possible. It may be
+        derived using some future DHCPv6 option, or be set by manual
+        configuration. Even on routers without manual configuration
+        options, being able to read the domain name provided by a different
+        router could make the user experience better due to consistent
+        naming of zones across the network.</t>
 
         <figure>
           <artwork>
@@ -304,11 +320,14 @@ Edit time:     333 min
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |      TBD-BY-IANA-2            |           Length              |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Name (not even null terminated - variable length)              |
+|Domain (DNS label sequence - variable length)                  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                          Domain Name TLV
           </artwork>
         </figure>
+
+        <t>Like the Zone field in <xref target="delegated-zone-tlv"/>, the
+        Domain Name TLV's contents are encoded as label sequence. </t>
 
         <t>By default, if no router advertises domain name TLV, hard-coded
         default (TBD) should be used.</t>
@@ -529,7 +548,7 @@ Edit time:     333 min
       with following TLVs within OSPF (RN is used as abbreviation for
       Router Name, and DZ for Delegated Zone TLVs):
       </t>
-      
+
       <figure>
         <artwork>
 (from IR1)
@@ -717,7 +736,8 @@ router-2 NS router-2
       interesting discussion in Orlando, where I was finally convinced that
       stateful Multicast DNS proxying is a bad idea.</t>
 
-      <t>Also thanks to Mark Baugher and Ole Troan for review comments.</t>
+      <t>Also thanks to Mark Baugher, Ole Troan and Shwetha Bhandari for
+      review comments.</t>
 
     </section>
     
