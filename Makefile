@@ -4,11 +4,11 @@
 # Author: Markus Stenberg <markus stenberg@iki.fi>
 #
 # Created:       Mon Jun 17 04:40:32 2013 mstenber
-# Last modified: Mon Jun 17 14:00:33 2013 mstenber
-# Edit time:     7 min
+# Last modified: Wed Jun 26 11:34:44 2013 mstenber
+# Edit time:     8 min
 #
 
-DRAFTS=draft-stenberg-homenet-hybrid-proxy-and-ospf-00.txt
+DRAFTS=draft-stenberg-homenet-dnssdext-hybrid-proxy-ospf-00.txt
 
 ifndef XML_LIBRARY
 XML_LIBRARY=$(HOME)/share/1/ietf-bib
