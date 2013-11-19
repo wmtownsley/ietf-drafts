@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Tue Nov 19 10:09:20 2013 mstenber
-Edit time:     206 min
+Last modified: Tue Nov 19 10:16:16 2013 mstenber
+Edit time:     207 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -341,8 +341,8 @@ Edit time:     206 min
       </section>
       <section anchor="net-hash" title="Network state hash TLV">
 
-        <t>TLV with T=2, V=H(value of node state hash TLV 1 .. 
-        value of node state hash TLV N).</t>
+        <t>TLV with T=2, V=H(value of node state TLV 1 .. 
+        value of node state TLV N).</t>
         
         <t>The node states are ordered according to normal ordering rules,
         that is, in ascending order, for hashing. </t>
