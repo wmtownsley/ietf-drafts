@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Tue Nov 19 08:57:52 2013 mstenber
-Edit time:     182 min
+Last modified: Tue Nov 19 09:33:22 2013 mstenber
+Edit time:     188 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -296,8 +296,13 @@ Edit time:     182 min
     <section anchor="tlvs" title="Type-Length-Value objects">
       <t>
         Every TLV is encoded as 2 octet type, followed by 2 octet length
-        (of the value field; zero means no value whatsoever), and then
-        followed by the value itself.
+        (of the whole TLV, including header; 4 means no value whatsoever),
+        and then followed by the value itself.
+
+        The actual length of TLV is always divisible by 4; if the length is
+        not, there are zeroed padding bytes at the end of TLV not included
+        in the length field.
+
       </t>
 
       <figure>
@@ -313,6 +318,12 @@ Edit time:     182 min
                                  TLV format
         </artwork>
       </figure>
+
+      <t>
+        Encoding of type=123 (0x7b) TLV with value 'x' (120 = 0x78):
+
+        007B 0005 7800 0000
+      </t>
 
       <t>Notation:
       <list>
