@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Tue Nov 19 11:26:58 2013 mstenber
-Edit time:     231 min
+Last modified: Tue Nov 19 12:07:56 2013 mstenber
+Edit time:     254 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -85,8 +85,10 @@ Edit time:     231 min
       <t>Data model of the hcp protocol is simple: Every participating node
       has (and also knows for every other participating node):
       <list>
-        <t>A public key which identifies it (or some other unique blob of
-        binary data if signatures are not used).</t>
+        <t>An unique, possibly long node identifier (length doesn't matter
+        very much, it's hash is mainly used). It can be a public
+        key, or some other unique blob of binary data if signatures are not
+        used.</t>
 
         <t>Latest update number (a 32-bit number).</t>
 
@@ -96,16 +98,16 @@ Edit time:     231 min
       </list>
       </t>
       
-      <t>Every node also has their own private key that corresponds with
-      their public key. The private key is not shared across the network,
-      but is instead used for signatures of messages and node state
-      updates if desirable.</t>
+      <t>If signatures are in use, every node also has their own private
+      key that corresponds with their public key. The private key is not
+      shared across the network, but is instead used for signatures of
+      messages and node state updates if desirable.</t>
     </section>
 
     <section title="Operation">
 
-      <t>This protocol is designed to run on port TBD, using IPv6 UDP
-      unicast and link-local multicast messages to address TBD for
+      <t>This protocol is designed to run on port TBD, using link-local
+      scoped IPv6 UDP unicast and multicast messages to address TBD for
       transport.</t>
 
       <section title="Regular (trickle-driven) status update sending">
@@ -160,7 +162,7 @@ Edit time:     231 min
               <xref target="req-net-message"/> 
               , or node state request defined in 
               <xref target="req-node-message"/> 
-              ), provide the required data in a reply.
+              ), provide the required data in an unicast reply.
               </t>
 
               <t>If it's reply which contains node states that seem more
@@ -335,11 +337,21 @@ Edit time:     231 min
       </t>
 
 
+      <section title="Request TLVs (for use within unicast requests)">
+
       <section anchor="req-net-hash" title="Request network state hash TLV">
 
         <t>TLV with T=1, empty V.</t>
 
       </section>
+      <section anchor="req-node-data" title="Request node data TLV">
+
+        <t>TLV with T=5, V=H(node identifier).</t>
+
+      </section>
+
+      </section>
+      <section title="Data TLVs (for use in both multi- and unicast data)">
       <section anchor="net-hash" title="Network state hash TLV">
 
         <t>TLV with T=2, V=H(value of node state TLV 1 .. 
@@ -351,17 +363,12 @@ Edit time:     231 min
       </section>
       <section anchor="node-id" title="Node id TLV">
 
-        <t>TLV with T=3, V=H(node public key) .. link id (4 octets)</t>
+        <t>TLV with T=3, V=H(node identifier) .. link id (4 octets)</t>
 
       </section>
       <section anchor="node-state" title="Node state TLV">
 
-        <t>TLV with T=4, V=H(node public key) .. update # (4 octets) .. H(node data TLV)</t>
-
-      </section>
-      <section anchor="req-node-data" title="Request node data TLV">
-
-        <t>TLV with T=5, V=H(node public key).</t>
+        <t>TLV with T=4, V=H(node identifier) .. update # (4 octets) .. H(node data TLV)</t>
 
       </section>
       <section anchor="node-data" title="Node data TLV">
@@ -375,24 +382,30 @@ Edit time:     231 min
         originator's own signature TLV. </t>
       </section>
 
-      <section anchor="node-pk-tlv" title="Node public key TLV">
-        <t>TLV with T=7, V=raw public key data (or other opaque data which
-        is guaranteedly unique)</t>
+
+      <section anchor="node-pk-tlv" title="Node's public key TLV (within
+                                           node data TLV)">
+        <t>TLV with T=7, V=public key (=raw node identifier)</t>
+
+        <t>Public key data for the node. Only relevant if signatures
+        are used. Can be used to verify that H(node identifier) == public
+        key, and that the node data signature matches public key. </t>
+
       </section>
 
-
-      <section anchor="link-tlv" title="Link TLV">
+      <section anchor="link-tlv" title="Link TLV (within node data TLV)">
         <t>TLV with T=8, V=link id(4 octets) .. a set of sub-TLVs</t>
         <t>Notably, for any link with neighbors detected on it, neighbor
         TLV (described next) for every neighbor should be included. </t>
         
       </section>
 
-      <section anchor="neighbor-tlv" title="Neighbor TLV">
-        <t>TLV with T=9, V=H(neighbor public key) .. neighbor link id (4 octets)</t>
+      <section anchor="neighbor-tlv" title="Neighbor TLV (within link TLV)">
+        <t>TLV with T=9, V=H(neighbor node identifier) .. neighbor link id (4 octets)</t>
         <t>This TLV indicates that the node in question vouches that the
         specified neighbor is reachable by it on the link under which the
         neighbor TLV is published. </t>
+      </section>
       </section>
 
       <section anchor="user-tlv" title="Custom TLV">
@@ -478,6 +491,15 @@ Edit time:     231 min
       <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-04.xml"?>
       <?rfc include="reference.I-D.draft-stenberg-homenet-dnssdext-hybrid-proxy-ospf-00.xml"?>
     </references>
+    <section title="TODO">
+      <t>Should define container TLV for ND/DHCP options.</t>
+      <t>Consider if duplicate H(node identifier) detection should be
+      included. On one hand, would allow for shorter H functions. On the
+      other, complicates protocols and forces publishing of node identifier
+      contents. </t>
+      <t>Is there a case for non-linklocal unicast? Currently explicitly
+      stating this is link-local only protocol.</t>
+    </section>
     <section title="Q &amp; A">
       <t>Q: Why not use TCP?</t>
       <t>A: It doesn't address the discovery problem. It also leads to N^2
@@ -501,6 +523,14 @@ Edit time:     231 min
       <t>A: Specifying conflict detection for smaller IDs was harder, and
       scalability of protocol isn't really affected by using real
       (=cryptographic) hash function.</t>
+
+      <t>Q: Why trust IPv6 fragmentation in unicast case? Why not do L7
+      fragmentation?</t>
+
+      <t>A: Because it will be there for a while at least. And while PMTU
+      et al may be problems on open internet, in controlled network
+      environment UDP fragmentation should NOT be broken in the foreseeable
+      future. </t>
 
     </section>
     <section title="Draft source">
