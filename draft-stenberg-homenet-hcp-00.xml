@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Tue Nov 19 09:33:22 2013 mstenber
-Edit time:     188 min
+Last modified: Tue Nov 19 09:46:53 2013 mstenber
+Edit time:     197 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -85,7 +85,8 @@ Edit time:     188 min
       <t>Data model of the hcp protocol is simple: Every participating node
       has (and also knows for every other participating node):
       <list>
-        <t>A public key which identifies it.</t>
+        <t>A public key which identifies it (or some other unique blob of
+        binary data if signatures are not used).</t>
 
         <t>Latest update number (a 32-bit number).</t>
 
@@ -365,27 +366,34 @@ Edit time:     188 min
       <section anchor="node-data" title="Node data TLV">
 
         <t>TLV with T=6, V=update # (4 octets) .. a set of sub-TLVs.</t>
-        <t>Notably, for any link with any hcp traffic on it, link TLV
-        (described next) should be included. </t>
+        <t>Public key TLV (described in <xref target="node-pk-tlv" />
+        SHOULD be always included if signatures are ever used. For any link
+        with any hcp traffic on it, link TLV (described in <xref
+        target="link-tlv" />) SHOULD be included. </t>
+      </section>
+
+      <section anchor="node-pk-tlv" title="Node public key TLV">
+        <t>TLV with T=7, V=raw public key data (or other opaque data which
+        is guaranteedly unique)</t>
       </section>
 
 
       <section anchor="link-tlv" title="Link TLV">
-        <t>TLV with T=7, V=link id(4 octets) .. a set of sub-TLVs</t>
+        <t>TLV with T=8, V=link id(4 octets) .. a set of sub-TLVs</t>
         <t>Notably, for any link with neighbors detected on it, neighbor
         TLV (described next) for every neighbor should be included. </t>
         
       </section>
 
       <section anchor="neighbor-tlv" title="Neighbor TLV">
-        <t>TLV with T=8, V=H(neighbor public key) .. neighbor link id (4 octets)</t>
+        <t>TLV with T=9, V=H(neighbor public key) .. neighbor link id (4 octets)</t>
         <t>This TLV indicates that the node in question vouches that the
         specified neighbor is reachable by it on the link under which the
         neighbor TLV is published. </t>
       </section>
 
       <section anchor="user-tlv" title="Custom URI typed TLV">
-        <t>TLV with T=9, V=Null-terminated URI followed by opaque data</t>
+        <t>TLV with T=10, V=Null-terminated URI followed by opaque data</t>
         <t>This TLV can be used to contain anything; the URI used should be
         under control of the author of that specification. 
         For example:
@@ -458,6 +466,9 @@ Edit time:     188 min
       scheme. Hopefully the data amounts used will stay small so we just
       trust unicast UDP to handle 'big enough' packets to contain single
       node's TLV data.</t>
+
+      <t>Q: Why so long IDs? Why real hash?</t>
+      <t>A: Specifying conflict detection for smaller IDs was harder :)</t>
 
     </section>
     <section title="Draft source">
