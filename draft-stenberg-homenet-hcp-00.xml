@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Wed Nov 20 14:51:01 2013 mstenber
-Edit time:     269 min
+Last modified: Wed Nov 20 15:18:49 2013 mstenber
+Edit time:     274 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -232,7 +232,7 @@ Edit time:     269 min
                anchor="net-message">
         <t>Must be present:
         <list>
-          <t>node id TLV (defined in <xref target="node-id"/>).</t>
+          <t>node link TLV (defined in <xref target="node-id"/>).</t>
           <t>network state hash TLV (defined in <xref target="net-hash"/>).</t>
         </list>
         </t>
@@ -249,7 +249,7 @@ Edit time:     269 min
                anchor="req-net-message">
         <t>Must be present:
         <list>
-          <t>node id TLV (defined in <xref target="node-id"/>).</t>
+          <t>node link TLV (defined in <xref target="node-id"/>).</t>
           <t>request network state hash TLV (defined in <xref target="req-net-hash"/>).</t>
         </list>
         </t>
@@ -263,7 +263,7 @@ Edit time:     269 min
 
         <t>Must be present:
         <list>
-          <t>node id TLV  (defined in <xref target="node-id"/>).</t>
+          <t>node link TLV  (defined in <xref target="node-id"/>).</t>
           <t>one or more request node data TLVs (defined in <xref
           target="req-node-data" />)).</t>
         </list>
@@ -277,7 +277,7 @@ Edit time:     269 min
                anchor="reply-message">
         <t>Must be present:
         <list>
-          <t>node id TLV  (defined in <xref target="node-id"/>).</t>
+          <t>node link TLV  (defined in <xref target="node-id"/>).</t>
 
           <t>network state hash TLV (defined in <xref
           target="net-hash" />) and variable number of node state
@@ -382,7 +382,9 @@ Edit time:     269 min
       </section>
       <section anchor="node-data" title="Node data TLV">
 
-        <t>TLV with T=6, V=update # (4 octets) .. a set of sub-TLVs.</t>
+        <t>TLV with T=6, V=H(node identifier) .. update # (4 octets) .. a
+        set of sub-TLVs.</t>
+
         <t>Public key TLV (described in <xref target="node-pk-tlv" />
         SHOULD be always included if signatures are ever used. For any link
         with any hcp traffic on it, link TLV (described in <xref
@@ -445,9 +447,11 @@ Edit time:     269 min
       <section title="Signature TLV">
 
         <t>TLV with T=0xFFFF, V=(TBD) public key algorithm based signature
-        of all TLVs within current scope (key used = private key matching
-        the public key of the node matching the node id TLV within the
-        scope).</t>
+        of all TLVs within current scope. The assumed signature key is
+        private key matching the public key of the the originator of node
+        link TLV (if signature TLV is within main body of message), or that
+        of the originator of the node data TLV (if signature TLV is within
+        node data TLV)..</t>
 
       </section>
     </section>
