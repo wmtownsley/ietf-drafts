@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Wed Nov 20 15:18:49 2013 mstenber
-Edit time:     274 min
+Last modified: Wed Nov 27 10:27:17 2013 mstenber
+Edit time:     304 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -202,15 +202,16 @@ Edit time:     274 min
       </section>
       
       <section title="Neighbor state maintenance">
-        <t>Whenever unicast reply is received on a link from another node,
-        the node should be added as neighbor TLV to that link TLV for
-        current node. If nothing (no RAs, no HCP traffic) is received from
-        that neighbor in XXX seconds and the neighbor is not in ND cache,
-        at least 3 attempts to ping it with request network state message
-        defined in <xref target="req-net-message" /> SHOULD be sent with
-        increasing timeouts (e.g. 1, 2, 4 seconds). If even after suitable
-        period after the last message nothing is received, the neighbor TLV
-        MUST be removed so that there are no dangling neighbors. </t>
+        <t>Whenever unicast reply is received on a link from another
+        node, the node should be added as neighbor TLV for current
+        node. If nothing (no RAs, no HCP traffic) is received from
+        that neighbor in XXX seconds and the neighbor is not in ND
+        cache, at least 3 attempts to ping it with request network
+        state message defined in <xref target="req-net-message" />
+        SHOULD be sent with increasing timeouts (e.g. 1, 2, 4
+        seconds). If even after suitable period after the last message
+        nothing is received, the neighbor TLV MUST be removed so that
+        there are no dangling neighbors. </t>
       </section>
 
     </section>
@@ -354,14 +355,13 @@ Edit time:     274 min
       <section title="Data TLVs (for use in both multi- and unicast data)">
       <section anchor="net-hash" title="Network state hash TLV">
 
-        <t>TLV with T=2, V=H(value of node state TLV 1 .. 
-        value of node state TLV N).</t>
+        <t>TLV with T=2, V=H(H(node data TLV 1) .. H(node data TLV N)).</t>
         
         <t>The node states are ordered according to normal ordering rules,
         that is, in ascending order, for hashing. </t>
 
       </section>
-      <section anchor="node-id" title="Node id TLV">
+      <section anchor="node-id" title="Node link TLV">
 
         <t>TLV with T=3, V=H(node identifier) .. link id (4 octets)</t>
 
@@ -386,9 +386,7 @@ Edit time:     274 min
         set of sub-TLVs.</t>
 
         <t>Public key TLV (described in <xref target="node-pk-tlv" />
-        SHOULD be always included if signatures are ever used. For any link
-        with any hcp traffic on it, link TLV (described in <xref
-        target="link-tlv" />) SHOULD be included. </t>
+        SHOULD be always included if signatures are ever used. </t>
         <t>If signatures in use, the node data TLV SHOULD also contain
         originator's own signature TLV. </t>
       </section>
@@ -404,23 +402,16 @@ Edit time:     274 min
 
       </section>
 
-      <section anchor="link-tlv" title="Link TLV (within node data TLV)">
-        <t>TLV with T=8, V=link id(4 octets) .. a set of sub-TLVs</t>
-        <t>Notably, for any link with neighbors detected on it, neighbor
-        TLV (described next) for every neighbor should be included. </t>
-        
-      </section>
-
-      <section anchor="neighbor-tlv" title="Neighbor TLV (within link TLV)">
-        <t>TLV with T=9, V=H(neighbor node identifier) .. neighbor link id (4 octets)</t>
-        <t>This TLV indicates that the node in question vouches that the
-        specified neighbor is reachable by it on the link under which the
-        neighbor TLV is published. </t>
+      <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
+        <t>TLV with T=8, V=H(neighbor node identifier)  .. neighbor link id (4 octets).. local link id (4 octets)</t>
+        <t>This TLV indicates that the node in question vouches that
+        the specified neighbor is reachable by it on the local link id
+        given. </t>
       </section>
       </section>
 
       <section anchor="user-tlv" title="Custom TLV">
-        <t>TLV with T=10, V=H-64(URI) .. opaque data</t>
+        <t>TLV with T=9, V=H-64(URI) .. opaque data</t>
         <t>This TLV can be used to contain anything; the URI used should be
         under control of the author of that specification. 
         For example:
@@ -544,6 +535,10 @@ Edit time:     274 min
       et al may be problems on open internet, in controlled network
       environment UDP fragmentation should NOT be broken in the foreseeable
       future. </t>
+
+      <t>Q: Should there be nested container syntax that is actually self-describing? (i.e. type flag that indicates container, no body except sub-TLVs?)</t>
+      <t>A: Not for now, but perhaps valid design.. TBD.</t>
+      
 
     </section>
     <section title="Draft source">
