@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Mon Dec  2 17:40:37 2013 mstenber
-Edit time:     304 min
+Last modified: Mon Jan 20 11:06:05 2014 mstenber
+Edit time:     407 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -35,7 +35,7 @@ Edit time:     304 min
         <email>markus.stenberg@iki.fi</email>
       </address>
     </author>
-    <date month="November" year="2013" />
+    <date month="January" year="2014" />
 
     <!--    <workgroup></workgroup> -->
 
@@ -43,9 +43,10 @@ Edit time:     304 min
     <keyword>Homenet</keyword>
     <abstract>
 
-      <t>This document describes a minimal state flooding protocol for home
-      (or other small site) use that can be used for various purposes,
-      without being tied to particular routing protocol. </t>
+      <t>This document describes a minimalist state synchronization
+      protocol for home (or other small site) use that can be used for
+      various purposes, without being tied to particular routing
+      protocol. </t>
 
     </abstract>
   </front>
@@ -62,7 +63,10 @@ Edit time:     304 min
           assumption). Current set of drafts that have been
           promoted within the homenet working group
           seem to promote this as the way to go (e.g. <xref
-          target="I-D.arkko-homenet-prefix-assignment"/>, <xref target="I-D.stenberg-homenet-dnssdext-hybrid-proxy-ospf"/>).
+          target="I-D.arkko-homenet-prefix-assignment"/>, <xref
+          target="I-D.stenberg-homenet-dnssdext-hybrid-proxy-ospf"/>). This
+          design choice makes the assumption that all routers do converge
+          to using some particular routing protocol.
         </t>
         <t>
           Everything where it is needed (small, discrete pieces of
@@ -72,9 +76,9 @@ Edit time:     304 min
       </list>
       </t>
 
-      <t>This draft describes a way to synchronize non-routing state across
-      the network, enabling use of arbitrary set of routing protocols in a
-      home as long as they support both importing and exporting of
+      <t>This draft describes a way to synchronize state across the
+      network, enabling use of arbitrary set of routing protocols in a home
+      as long as they support both importing and exporting of
       source-specific route entries required to get the functionality
       described in <xref target="I-D.troan-homenet-sadr"/>.</t>
 
@@ -85,16 +89,17 @@ Edit time:     304 min
       <t>Data model of the hcp protocol is simple: Every participating node
       has (and also knows for every other participating node):
       <list>
-        <t>An unique, possibly long node identifier (length doesn't matter
-        very much, it's hash is mainly used). It can be a public
-        key, or some other unique blob of binary data if signatures are not
-        used.</t>
+        <t>An unique, possibly long node identifier (the length does not
+        really matter very much, as only the hash of it is mainly used;
+        however, it should be unique across the network). It can be a
+        public key, or some other unique blob of binary data if signatures
+        are not used.</t>
 
         <t>Latest update number (a 32-bit number).</t>
 
-        <t>A set of TLV data it wants to share with the rest of the
-        home. The TLVs are assumed to be sorted in ascending order based on
-        their binary content. </t>
+        <t>A set of Type-Length-Value (TLV) data it wants to share with the
+        rest of the home. The TLVs are assumed to be sorted in ascending
+        order based on their binary content. </t>
       </list>
       </t>
       
@@ -106,71 +111,93 @@ Edit time:     304 min
 
     <section title="Operation">
 
-      <t>This protocol is designed to run on port TBD, using link-local
-      scoped IPv6 UDP unicast and multicast messages to address TBD for
-      transport.</t>
+      <t>The protocol is designed to run on UDP port IANA-UDP-PORT, using both
+      link-local scoped IPv6 unicast and link-local scoped IPv6 multicast
+      messages to address IANA-MULTICAST-ADDRESS for transport. The protocol
+      consists of Trickle-driven multicast status messages, and then
+      unicast based neighbor state synchronization exchanges (that can be
+      also used as keep-alives if required). </t>
 
-      <section title="Regular (trickle-driven) status update sending">
+      <section title="Regular Trickle-driven status updates">
 
-      <t>Every node is responsible for sending link-local multicast network
-      state messages defined in <xref target="net-message"/> every time
-      Trickle algorithm defined in <xref target="RFC6206"/> indicates
-      they should on every link the protocol is active on.</t>
+        <t>Every node is responsible for sending link-local multicast network
+        state messages defined in <xref target="net-message"/> every time
+        Trickle algorithm defined in <xref target="RFC6206"/> indicates
+        they should on every link the protocol is active on.</t>
 
-      <t>Trickle algorithm has 3 parameters; Imin, Imax and k. Imin and
-      Imax represent minimum and maximum time intervals during which at
-      least k Trickle update must be seen on a link. This specification
-      does NOT mandate any defaults, but given the timer reset on data
-      updates, k=1 SHOULD be used (as later retransmissions should handle
-      packet loss in any case). Imax MUST be at least a minute. Imin MUST
-      be at least 500 milliseconds to make this at least as
-      network-unfriendly as Multicast DNS (earliest transmissions may occur
-      at Imin/2 = 250 milliseconds given minimum values).</t>
+        <t>Trickle algorithm has 3 parameters; Imin, Imax and k. Imin and
+        Imax represent minimum and maximum time intervals during which at
+        least k Trickle update must be seen on a link. This specification
+        does NOT mandate any defaults, but given the timer reset on data
+        updates, k=1 SHOULD be used (as later retransmissions should handle
+        packet loss in any case). Imax MUST be at least a minute. Imin MUST
+        be at least 200 milliseconds (earliest transmissions may occur
+        at Imin/2 = 100 milliseconds given minimum values).</t>
 
       </section>
 
-      <section title="Received packet handling">
+      <section title="Handling of received packets" anchor="reception">
         <t>
+          While Trickle should take care of sending of periodic status
+          updates for most part (see caveats in <xref target="neighbor" />
+          for potential unicast messages required to verify reachability of
+          a neighbor), the unicast and multicast packet reception should
+        work as follows:</t>
+
+        <t>
+
           <list style="numbers">
 
-            <t>If it's multicast message:
+            <t>If it is a multicast message:
             <list style="numbers">
 
-              <t>Verify it's network state message defined in <xref
-              target="net-message"/>, and treat Trickle state as consistent if
-              and only if the network state hash matches local known state (If
-              so, no need to proceed further). If not, treat Trickle state as
-              inconsistent. </t>
+              <t>Verify it is a network state message defined in <xref
+              target="net-message"/>. If the network state hash within the
+              message matches hash of locally stored network state,
+              consider Trickle state as consistent. In that case, there is
+              no need to proceed further. If the hashes do not match,
+              consider Trickle state as inconsistent and proceed to the
+              next steps. </t>
 
-              <t>If the message was in short format (no node state TLV(s)),
-              send network state request defined in <xref
-              target="req-net-message"/>.</t>
+              <t>If the message was in short format (that is, it contained
+              no node state TLVs), send a network state request defined in
+              <xref target="req-net-message"/> using IPv6 unicast to the
+              sender of the multicast message.</t>
 
-              <t>Otherwise send node state request defined in 
+              <t>If the message was in long format (it contained one or
+              more node state TLVs), send node state request defined in
               <xref target="req-node-message"/> 
-              for any nodes our information is outdated for (or missing). Note
-              that if our information is more recent than the neighbor's, this
-              may require sending nothing at all.
+              for any nodes for which our information is outdated (our
+              update number is lower than that within the message) or
+              missing using IPv6 unicast to the sender of the multicast
+              message. Note that if our information is more recent than
+              that of the neighbor, this may require sending nothing at
+              all.
               </t>
             </list>
             </t>
 
-            <t>If it's unicast message:
+            <t>If it is an unicast message:
             <list style="numbers">
 
-              <t>If it's request (either network state request defined in 
+              <t>If it is a request (either network state request defined in 
               <xref target="req-net-message"/> 
               , or node state request defined in 
               <xref target="req-node-message"/> 
               ), provide the required data in an unicast reply.
               </t>
 
-              <t>If it's reply which contains node states that seem more
-              recent than ours, send node state request defined in 
+              <t>If it is a reply which contains node state TLVs that seem
+              more recent than ours for that node (higher update number or
+              we lack the node data altogether), send node state request
+              defined in
               <xref target="req-node-message"/> 
-              for any nodes our information is outdated for (or missing).
-              If it contains node data which is more recent than
-              what we have, update our state and reset Trickle
+              for the node data for the corresponding nodes.
+              </t>
+
+              <t>If it is a reply which contains node data TLV which is
+              more recent than what we have for the corresponding node,
+              update our state and reset Trickle.
               </t>
 
             </list>
@@ -183,13 +210,27 @@ Edit time:     304 min
       <section title="Data updates">
 
         <t>Each node is responsible for publishing only a valid set of data
-        in TLVs. Whenever data node publishes changes, the update number
-        should be incremented. If data for own node id is detected (via
-        uni- or multicast message containing node state TLVs described in
-        <xref target="node-state" />) with higher update # than current,
-        own update number should be made higher and data republished. </t>
+        in TLVs contained within it's own node data TLV. Whenever the node
+        data TLV's content changes, the update number should be
+        incremented.</t>
 
-        <t>Regardless of how the node data for ANY node node has changes,
+
+        <t>If a message containing node state TLV described in <xref
+        target="node-state" /> is received via unicast or multicast with
+        node's own node identifier and higher update number than current,
+        or same update number and different hash, there is a problem in the
+        network. There are two different ways to handle this: the default
+        way to handle it is to make own update number higher than the
+        received one and republish node data using the same node
+        identifier. If this happens more than ID-CONFLICT-COUNT times in
+        ID-CONFLICT-INTERVAL seconds AND the local node identifier
+        is not globally unique, new node identifier should be generated and
+        node data republished with the new node identifier. (This problem
+        is relevant only if not using signatures; collision of node
+        identifier hashes for public keys is not considered here due to low
+        likelihood of it.)</t>
+
+        <t>Regardless of how the node data for ANY node which node has changes,
         any change should reset the Trickle timer.</t>
       </section>
 
@@ -201,68 +242,73 @@ Edit time:     304 min
         purge all node data for nodes which are no longer reachable. </t>
       </section>
       
-      <section title="Neighbor state maintenance">
-        <t>Whenever unicast reply is received on a link from another
-        node, the node should be added as neighbor TLV for current
-        node. If nothing (no RAs, no HCP traffic) is received from
-        that neighbor in XXX seconds and the neighbor is not in ND
-        cache, at least 3 attempts to ping it with request network
-        state message defined in <xref target="req-net-message" />
-        SHOULD be sent with increasing timeouts (e.g. 1, 2, 4
-        seconds). If even after suitable period after the last message
-        nothing is received, the neighbor TLV MUST be removed so that
-        there are no dangling neighbors. </t>
+      <section title="Neighbor state maintenance" anchor="neighbor">
+        <t>Whenever unicast reply is received on a link from another node,
+        the node should be added as neighbor TLV for current node. If
+        nothing (for example - no router advertisements, no HCP traffic) is
+        received from that neighbor in UNREACHABLE-TIME seconds and the
+        neighbor is not in neighbor discovery cache, at least
+        REACH-ATTEMPTS attempts to ping it with request network state
+        message defined in <xref target="req-net-message" /> SHOULD be sent
+        with increasing timeouts (e.g. 1, 2, 4 seconds). If even after
+        suitable period after the last message nothing is received, the
+        neighbor TLV MUST be removed so that there are no dangling
+        neighbors. As an alternative, if there is a layer 2 unreachability
+        notification of some sort available, it may directly trigger
+        removal of neighbor TLV.</t>
       </section>
 
     </section>
 
     <section title="Messages">
 
-        <t>Every message is encoded as a sequence of TLV
-        objects described in <xref target="tlvs"/>. Therefore the message
-        definition here defines just the set of TLVs expected in the
-        particular message. 
-        </t>
-        
-        <t>Note that in _every_ encoding scope (either root level within
-        the message itself, or within container TLV), TLVs MUST be in
-        ascending order based on binary comparison of both TLV header and
-        value.</t>
+      <t>Every message is encoded as a sequence of TLV
+      objects described in <xref target="tlvs"/>. Therefore the message
+      definition here defines just the set of TLVs expected in the
+      particular message. 
+      </t>
+      
+      <t>Note that in _every_ encoding scope (either root level within
+      the message itself, or within container TLV), TLVs MUST be in
+      ascending order based on binary comparison of both TLV header and
+      value.</t>
 
       <section title="Network state message ((link-local) multicast)"
                anchor="net-message">
-        <t>Must be present:
+        <t>MUST be present:
         <list>
           <t>node link TLV (defined in <xref target="node-id"/>).</t>
-          <t>network state hash TLV (defined in <xref target="net-hash"/>).</t>
+          <t>network state TLV (defined in <xref target="net-hash"/>).</t>
         </list>
         </t>
 
-        <t>There may be also _all_ node state TLV(s) (defined in <xref
+        <t>There SHOULD be also _all_ node state TLV(s) (defined in <xref
         target="node-state"/>), if and only if inserting all of them within
-        the message would not exceed the minimum IPv6 MTU.</t>
+        the message would not exceed the minimum IPv6 MTU. Sending of just
+        some node state TLV(s) MUST NOT be done as it would confuse the
+        packet reception algorithm described in <xref
+        target="reception"/>.</t>
 
-        <t>May be present: certificate-related TLVs and signature
-        TLV.</t>
+        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
+
       </section>
 
       <section title="Request network state message (unicast)"
                anchor="req-net-message">
-        <t>Must be present:
+        <t>MUST be present:
         <list>
           <t>node link TLV (defined in <xref target="node-id"/>).</t>
-          <t>request network state hash TLV (defined in <xref target="req-net-hash"/>).</t>
+          <t>request network state TLV (defined in <xref target="req-net-hash"/>).</t>
         </list>
         </t>
 
-        <t>May be present: certificate-related TLVs and signature
-        TLV.</t>
+        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
       </section>
       <section title="Request node(s) data message (unicast)"
                anchor="req-node-message">
 
-        <t>Must be present:
+        <t>MUST be present:
         <list>
           <t>node link TLV  (defined in <xref target="node-id"/>).</t>
           <t>one or more request node data TLVs (defined in <xref
@@ -270,19 +316,18 @@ Edit time:     304 min
         </list>
         </t>
 
-        <t>May be present: certificate-related TLVs and signature
-        TLV.</t>
+        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
       </section>
       <section title="Reply state message (unicast)"
                anchor="reply-message">
-        <t>Must be present:
+        <t>MUST be present:
         <list>
           <t>node link TLV  (defined in <xref target="node-id"/>).</t>
 
-          <t>network state hash TLV (defined in <xref
-          target="net-hash" />) and variable number of node state
-          TLVs (defined in <xref target="node-state" />), or</t>
+          <t>network state TLV (defined in <xref target="net-hash" />)
+          and node state TLV (defined in <xref target="node-state" />) for
+          every known node by the sender, or</t>
 
           <t>one or more combinations of node state and node data TLVs
           (defined in <xref target="node-data" />).</t>
@@ -290,8 +335,7 @@ Edit time:     304 min
         </list>
         </t>
 
-        <t>May be present: certificate-related TLVs and signature
-        TLV.</t>
+        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
 
       </section>
@@ -303,23 +347,22 @@ Edit time:     304 min
         (of the whole TLV, including header; 4 means no value whatsoever),
         and then followed by the value itself.
 
-        The actual length of TLV is always divisible by 4; if the length is
-        not, there are zeroed padding bytes at the end of TLV not included
-        in the length field.
-
+        The actual length of TLV MUST be always divisible by 4; if the
+        length of the value is not, MUST be zeroed padding bytes at the end
+        of TLV that MUST NOT be included in the length field.
       </t>
 
       <figure>
         <artwork>
-      0                   1                   2                   3
-      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |            Type               |           Length              |
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |                             Value                             |
-      |                     (variable # of bytes)                     |
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                                 TLV format
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |            Type               |           Length              |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                             Value                             |
+          |                     (variable # of bytes)                     |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          TLV format
         </artwork>
       </figure>
 
@@ -331,8 +374,8 @@ Edit time:     304 min
 
       <t>Notation:
       <list>
-        <t>.. = binary concatenation operation</t>
-        <t>H(x) = hash function (TBD) of x</t>
+        <t>.. = octet string concatenation operation</t>
+        <t>H(x) = MD5 hash of x</t>
         <t>H-64(x) = H(x) truncated by taking just first 64 bits of the result.</t>
       </list>
       </t>
@@ -340,110 +383,114 @@ Edit time:     304 min
 
       <section title="Request TLVs (for use within unicast requests)">
 
-      <section anchor="req-net-hash" title="Request network state hash TLV">
+        <section anchor="req-net-hash" title="Request network state TLV">
 
-        <t>TLV with T=1, empty V.</t>
+          <t>TLV with T=2, empty V.</t>
 
-      </section>
-      <section anchor="req-node-data" title="Request node data TLV">
+        </section>
+        <section anchor="req-node-data" title="Request node data TLV">
 
-        <t>TLV with T=5, V=H(node identifier).</t>
+          <t>TLV with T=3, V=H(node identifier).</t>
 
-      </section>
+        </section>
 
       </section>
       <section title="Data TLVs (for use in both multi- and unicast data)">
-      <section anchor="net-hash" title="Network state hash TLV">
+        <section anchor="node-id" title="Node link TLV">
 
-        <t>TLV with T=2, V=H(H(node data TLV 1) .. H(node data TLV N)).</t>
-        
-        <t>The node states are ordered according to normal ordering rules,
-        that is, in ascending order, for hashing. </t>
+          <t>TLV with T=1, V=H(node identifier) .. link id (4 octets)</t>
 
-      </section>
-      <section anchor="node-id" title="Node link TLV">
+        </section>
+        <section anchor="net-hash" title="Network state TLV">
 
-        <t>TLV with T=3, V=H(node identifier) .. link id (4 octets)</t>
+          <t>TLV with T=4, V=H(H(node data TLV 1) .. H(node data TLV N)).</t>
+          
+          <t>The node data are ordered for hashing by octet comparison of
+          the corresponding node identifier hashes in ascending order.</t>
 
-      </section>
-      <section anchor="node-state" title="Node state TLV">
+        </section>
+        <section anchor="node-state" title="Node state TLV">
 
-        <t>TLV with T=4, V=H(node identifier) .. update # (4 octets)
-        .. milliseconds since origination (4 octets) .. H(node data TLV)</t>
+          <t>TLV with T=5, V=H(node identifier) .. update # (4 octets)
+          .. milliseconds since origination (4 octets) .. H(node data TLV)</t>
 
-        <t>Whole network should have the same idea about the time
-        since origination; even the originating router should
-        increment the time whenever it needs to send new node state
-        TLV regarding itself without changing it's node data TLV. It
-        is not included within node data TLV, however, as that is
-        immutable and potentially signed by the originating node at
-        the time of origination.</t>
+          <t>Whole network should have roughly same idea about the time
+          since origination; even the originating router should increment
+          the time whenever it needs to send new node state TLV regarding
+          itself without changing it's node data TLV. It is not included
+          within node data TLV, however, as that is immutable and
+          potentially signed by the originating node at the time of
+          origination.</t>
 
-      </section>
-      <section anchor="node-data" title="Node data TLV">
+        </section>
+        <section anchor="node-data" title="Node data TLV">
 
-        <t>TLV with T=6, V=H(node identifier) .. update # (4 octets) .. a
-        set of sub-TLVs.</t>
+          <t>TLV with T=6, V=H(node identifier) .. update # (4 octets) .. a
+          set of sub-TLVs.</t>
 
-        <t>Public key TLV (described in <xref target="node-pk-tlv" />
-        SHOULD be always included if signatures are ever used. </t>
-        <t>If signatures in use, the node data TLV SHOULD also contain
-        originator's own signature TLV. </t>
-      </section>
-
-
-      <section anchor="node-pk-tlv" title="Node's public key TLV (within
-                                           node data TLV)">
-        <t>TLV with T=7, V=public key (=raw node identifier)</t>
-
-        <t>Public key data for the node. Only relevant if signatures
-        are used. Can be used to verify that H(node identifier) == public
-        key, and that the node data signature matches public key. </t>
-
-      </section>
-
-      <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
-        <t>TLV with T=8, V=H(neighbor node identifier)  .. neighbor link id (4 octets).. local link id (4 octets)</t>
-        <t>This TLV indicates that the node in question vouches that
-        the specified neighbor is reachable by it on the local link id
-        given. </t>
-      </section>
-      </section>
-
-      <section anchor="user-tlv" title="Custom TLV">
-        <t>TLV with T=9, V=H-64(URI) .. opaque data</t>
-        <t>This TLV can be used to contain anything; the URI used should be
-        under control of the author of that specification. 
-        For example:
-        
-        V=H-64('http://fingon.iki.fi/json-for-hcp') .. '{"cool": "json
-        extension!"}'
-
-        or
-
-        V=H-64('mailto:fingon+json+hcp@iki.fi') .. '{"cool": "json
-        extension!"}'
-
-        </t>
-      </section>
+          <t>Public key TLV (described in <xref target="node-pk-tlv" />
+          SHOULD be always included if signatures are ever used. </t>
+          <t>If signatures in use, the node data TLV SHOULD also contain
+          originator's own signature TLV. </t>
+        </section>
 
 
-      <section title="Certificate-related TLVs">
+        <section anchor="node-pk-tlv" title="Node public key TLV (within
+                                             node data TLV)">
+          <t>TLV with T=7, V=public key (=raw node identifier)</t>
 
-        <t>TBD; should be probably some sort of certificate ID to be used
-        in a lookup at most, as raw certificates will overflow easily IPv6
-        minimum MTU.</t>
+          <t>Public key data for the node. Only relevant if signatures are
+          used. Can be used to verify that H(node identifier) equals public
+          key, and that the signature TLV within node data matches public
+          key. </t>
+
+        </section>
+
+        <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
+          <t>TLV with T=8, V=H(neighbor node identifier)  .. neighbor link id (4 octets).. local link id (4 octets)</t>
+          <t>This TLV indicates that the node in question vouches that
+          the specified neighbor is reachable by it on the local link id
+          given. </t>
+        </section>
 
       </section>
-      <section title="Signature TLV">
 
-        <t>TLV with T=0xFFFF, V=(TBD) public key algorithm based signature
-        of all TLVs within current scope. The assumed signature key is
-        private key matching the public key of the the originator of node
-        link TLV (if signature TLV is within main body of message), or that
-        of the originator of the node data TLV (if signature TLV is within
-        node data TLV)..</t>
+        <section anchor="user-tlv" title="Custom TLV (within/without node data TLV)">
+          <t>TLV with T=9, V=H-64(URI) .. opaque data</t>
+          <t>This TLV can be used to contain anything; the URI used should be
+          under control of the author of that specification. 
+          For example:</t>
+          
+          <t>V=H-64('http://fingon.iki.fi/json-for-hcp') .. '{"cool": "json
+          extension!"}'</t>
 
+          <t>or</t>
+
+          <t>V=H-64('mailto:fingon+json+hcp@iki.fi') .. '{"cool": "json
+          extension!"}'</t>
+
+        </section>
+
+      <section title="Authentication TLVs" anchor="auth-tlvs">
+
+        <section title="Certificate-related TLVs">
+
+          <t>TBD; should be probably some sort of certificate ID to be used
+          in a lookup at most, as raw certificates will overflow easily IPv6
+          minimum MTU.</t>
+
+        </section>
+        <section title="Signature TLV">
+
+          <t>TLV with T=0xFFFF, V=(TBD) public key algorithm based
+          signature of all TLVs within current scope as well as the parent
+          TLV header, if any. The assumed signature key is private key
+          matching the public key of the the originator of node link TLV
+          (if signature TLV is within main body of message), or that of the
+          originator of the node data TLV (if signature TLV is within node
+          data TLV)..</t>
+
+        </section>
       </section>
     </section>
 
@@ -458,7 +505,7 @@ Edit time:     304 min
         
         <t>Slightly more trustworthy (as long as you trust every router in
         your home) is to use manually keyed IPsec using the per-port
-        granularity for port TBD UDP traffic. The painful part in this mode
+        granularity for port IANA-UDP-PORT UDP traffic. The painful part in this mode
         is setting up the pre-shared key as IKE cannot be used with
         multicast traffic. </t>
         
@@ -470,7 +517,7 @@ Edit time:     304 min
         
       </list>
       </t>
-        
+      
       <t>In the "have faith mode", the protocol is wide open to a variety
       of attacks. On the other hand, in the in-protocol cryptography mode,
       care must be taken in rate limiting verification of invalid packets,
@@ -479,9 +526,43 @@ Edit time:     304 min
 
     </section>
 
+
+    <section anchor="const" title="Protocol constants">
+      <t>Imin (for Trickle) >= 200 milliseconds</t>
+      <t>Imax (for Trickle) >= 60 seconds</t>
+      <t>k (for Trickle) suggested to be 1</t>
+
+      <t>ID-CONFLICT-COUNT and ID-CONFLICT-INTERVAL are left up
+      to the implementation</t>
+
+      <t>UNREACHABLE-TIME should be proportional with Imax
+      (smaller values not useful; orders of magnitude larger values
+      neither). </t>
+
+      <t>REACH-ATTEMPTS should depend on media used, but at least
+      'few', e.g. 3 times.</t>
+
+    </section>
+ 
     <section anchor="iana" title="IANA Considerations">
       
-      <t>TBD (IANA should maintain registry of types)</t>
+      <t>IANA should set up a registry for hcp TLV types, with following
+      initial contents:</t>
+
+      <t>0: Reserved (should not happen on wire)</t>
+      <t>1: Node link</t>
+      <t>2: Request network state</t>
+      <t>3: Request node data</t>
+      <t>4: Network state</t>
+      <t>5: Node state</t>
+      <t>6: Node data</t>
+      <t>7: Node public key</t>
+      <t>8: Neighbor</t>
+      <t>9: Custom</t>
+      <t>65535: Signature</t>
+
+      <t>IANA should also allocate UDP port number IANA-UDP-PORT, as well as
+      IPv6 link-local multicast address IANA-MULTICAST-ADDRESS for hcp use.</t>
 
     </section>
 
@@ -509,7 +590,6 @@ Edit time:     304 min
       <t>A: It doesn't address the discovery problem. It also leads to N^2
       connections when N nodes share a link, which is awkward. </t>
 
-
       <t>Q: Why effectively build a link state routing protocol without
       routing?</t>
       <t>A: It felt like a good idea at the time. It does not require
@@ -532,11 +612,14 @@ Edit time:     304 min
       fragmentation?</t>
 
       <t>A: Because it will be there for a while at least. And while PMTU
-      et al may be problems on open internet, in controlled network
+      et al may be problems on open internet, in a home network
       environment UDP fragmentation should NOT be broken in the foreseeable
       future. </t>
 
-      <t>Q: Should there be nested container syntax that is actually self-describing? (i.e. type flag that indicates container, no body except sub-TLVs?)</t>
+      <t>Q: Should there be nested container syntax that is actually
+      self-describing? (i.e. type flag that indicates container, no body
+      except sub-TLVs?)</t>
+
       <t>A: Not for now, but perhaps valid design.. TBD.</t>
       
 
@@ -548,9 +631,18 @@ Edit time:     304 min
       and/or pull requests if and when you have changes to it! </t>
     </section>
 
+    <section title="Implementation">
+
+      <t>GPLv2 licensed experimental implementation of the protocol is
+      available at <eref
+      target="https://github.com/sbyx/hnetd/">https://github.com/sbyx/hnetd/</eref>. Comments
+      and/or pull requests are welcomed to that too.</t>
+    </section>
+
     <section title="Acknowledgements">
 
-      <t>Thanks to Ole Troan, Steven Barth and Pierre Pfister for review comments.</t>
+      <t>Thanks to Ole Troan, Steven Barth, Pierre Pfister and Mark Baugher
+      for review comments.</t>
 
     </section>
     
