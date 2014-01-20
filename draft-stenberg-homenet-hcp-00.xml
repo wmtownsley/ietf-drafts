@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Mon Jan 20 11:06:05 2014 mstenber
-Edit time:     407 min
+Last modified: Mon Jan 20 11:21:52 2014 mstenber
+Edit time:     415 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -348,8 +348,9 @@ Edit time:     407 min
         and then followed by the value itself.
 
         The actual length of TLV MUST be always divisible by 4; if the
-        length of the value is not, MUST be zeroed padding bytes at the end
-        of TLV that MUST NOT be included in the length field.
+        length of the value is not, zeroed padding bytes MUST be inserted
+        at the end of TLV. The padding bytes MUST NOT be included in the
+        length field.
       </t>
 
       <figure>
