@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Thu Jan 23 20:20:00 2014 mstenber
-Edit time:     416 min
+Last modified: Thu Jan 23 21:05:19 2014 mstenber
+Edit time:     418 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -583,7 +583,7 @@ Edit time:     416 min
       included. On one hand, would allow for shorter H functions. On the
       other, complicates protocols and forces publishing of node identifier
       contents. </t>
-      <t>Is there a case for non-linklocal unicast? Currently explicitly
+      <t>Is there a case for non-link-local unicast? Currently explicitly
       stating this is link-local only protocol.</t>
     </section>
     <section title="Q &amp; A">

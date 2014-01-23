@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Jun 17 04:55:57 2013 mstenber
-Last modified: Thu Jan 23 20:47:19 2014 mstenber
-Edit time:     15 min
+Last modified: Thu Jan 23 21:07:01 2014 mstenber
+Edit time:     19 min
 -->
 
 <!--
@@ -48,7 +48,7 @@ Forked copy of ospf draft, with just the TLV binary content.
     <keyword>DNS-SD</keyword>
     <abstract>
 
-      <t>This document describes the concrete Type-Length-Value(TLV) payloads which can be used in conjunction with hybrid proxy to enable Home Networking Control Protocol (HNCP) nodes to form an automatically configured network where proxying of datafrom multicast DNS to DNS Service Discovery works as expected across links.</t>
+      <t>This document describes the concrete Type-Length-Value(TLV) payloads which can be used in conjunction with hybrid proxy to enable Home Networking Control Protocol (HNCP) nodes to form an automatically configured network where proxying of data from multicast DNS to DNS Service Discovery works as expected across links.</t>
 
     </abstract>
   </front>
@@ -64,7 +64,7 @@ Forked copy of ospf draft, with just the TLV binary content.
 
     <section anchor="how" title="HNCP TLVs">
 
-      <t>To implement this specification fully, support for following three different new HNCP TLVs is needed. However, only the DNS Delegated Zone TLV MUST be supported, and the other two SHOULD be supported. Their semantics (if supported) MUST be implemented according to XXX-GENERIC-SD.</t>
+      <t>To implement this specification fully, support for following three different new HNCP (XXX-HCP) TLVs is needed. However, only the DNS Delegated Zone TLV MUST be supported, and the other two SHOULD be supported. Their semantics (if supported) MUST be implemented according to XXX-GENERIC-SD.</t>
 
       <section anchor="delegated-zone-tlv" title="DNS Delegated Zone TLV">
 
@@ -142,6 +142,7 @@ Forked copy of ospf draft, with just the TLV binary content.
   <back>
     <references title="Normative references">
       <?rfc include="reference.RFC.2119.xml"?>
+      <!-- XXX-HCP -->
       <!-- XXX-GENERIC-SD -->
     </references>
   </back>
