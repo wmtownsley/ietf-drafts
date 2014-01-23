@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Mon Jan 20 11:21:52 2014 mstenber
-Edit time:     415 min
+Last modified: Thu Jan 23 20:20:00 2014 mstenber
+Edit time:     416 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -17,12 +17,12 @@ Edit time:     415 min
 
 <rfc
     ipr='trust200902'
-    docName='draft-stenberg-homenet-hcp-00'
+    docName='draft-stenberg-homenet-hncp-00'
     category='std'
     >
   <front>
-    <title abbrev="Homenet Control Protocol">
-      Homenet Control Protocol
+    <title abbrev="Home Networking Control Protocol">
+      Home Networking Control Protocol
     </title>
     <author initials="M" surname="Stenberg" fullname="Markus Stenberg">
       <address>
@@ -86,7 +86,7 @@ Edit time:     415 min
 
     <section title="Data model">
 
-      <t>Data model of the hcp protocol is simple: Every participating node
+      <t>Data model of the HNCP protocol is simple: Every participating node
       has (and also knows for every other participating node):
       <list>
         <t>An unique, possibly long node identifier (the length does not
@@ -245,7 +245,7 @@ Edit time:     415 min
       <section title="Neighbor state maintenance" anchor="neighbor">
         <t>Whenever unicast reply is received on a link from another node,
         the node should be added as neighbor TLV for current node. If
-        nothing (for example - no router advertisements, no HCP traffic) is
+        nothing (for example - no router advertisements, no HNCP traffic) is
         received from that neighbor in UNREACHABLE-TIME seconds and the
         neighbor is not in neighbor discovery cache, at least
         REACH-ATTEMPTS attempts to ping it with request network state
@@ -462,12 +462,12 @@ Edit time:     415 min
           under control of the author of that specification. 
           For example:</t>
           
-          <t>V=H-64('http://fingon.iki.fi/json-for-hcp') .. '{"cool": "json
+          <t>V=H-64('http://fingon.iki.fi/json-for-hncp') .. '{"cool": "json
           extension!"}'</t>
 
           <t>or</t>
 
-          <t>V=H-64('mailto:fingon+json+hcp@iki.fi') .. '{"cool": "json
+          <t>V=H-64('mailto:fingon+json+hncp@iki.fi') .. '{"cool": "json
           extension!"}'</t>
 
         </section>
@@ -547,7 +547,7 @@ Edit time:     415 min
  
     <section anchor="iana" title="IANA Considerations">
       
-      <t>IANA should set up a registry for hcp TLV types, with following
+      <t>IANA should set up a registry for HNCP TLV types, with following
       initial contents:</t>
 
       <t>0: Reserved (should not happen on wire)</t>
@@ -563,7 +563,7 @@ Edit time:     415 min
       <t>65535: Signature</t>
 
       <t>IANA should also allocate UDP port number IANA-UDP-PORT, as well as
-      IPv6 link-local multicast address IANA-MULTICAST-ADDRESS for hcp use.</t>
+      IPv6 link-local multicast address IANA-MULTICAST-ADDRESS for HNCP use.</t>
 
     </section>
 
