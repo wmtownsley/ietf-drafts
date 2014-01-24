@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Fri Jan 24 13:04:15 2014 mstenber
-Edit time:     420 min
+Last modified: Fri Jan 24 14:07:03 2014 mstenber
+Edit time:     421 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -554,8 +554,8 @@ Edit time:     420 min
       <t>1: Node link</t>
       <t>2: Request network state</t>
       <t>3: Request node data</t>
-      <t>4: Node state</t>
-      <t>5: Network state</t>
+      <t>4: Network state</t>
+      <t>5: Node state</t>
       <t>6: Node data</t>
       <t>7: Node public key</t>
       <t>8: Neighbor</t>
