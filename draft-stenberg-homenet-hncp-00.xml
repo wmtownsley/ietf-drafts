@@ -1,7 +1,7 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Wed Jan 29 19:49:46 2014 mstenber
+Last modified: Thu Jan 30 09:12:26 2014 mstenber
 Edit time:     445 min
 -->
 
@@ -540,9 +540,9 @@ Edit time:     445 min
       <t>As performance optimization, instead of providing signatures for
       actual node data and the protocol messages themselves, it is also
       possible to provide signatures just for protocol messages. If doing
-      that, it is not possible to make verify source of messages any more,
-      but as long as the set of routers is still trusted, it should not
-      matter.</t>
+      that, it is not possible to verify original source of node data any
+      more, but as long as the set of routers is still trusted, it should
+      not matter.</t>
 
     </section>
 
