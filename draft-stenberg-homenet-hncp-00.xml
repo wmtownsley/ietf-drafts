@@ -909,7 +909,7 @@ Edit time:     518 min
 	  Each such route MUST be source-restricted to only apply to traffic with a source address within P and its metric MUST reflect the hop-count to R.</t>
 	  <t>For each assigned prefix A of a router R:
 	  Create a route to A via the next-hop for R acquired in #2. Each such route MUST NOT be source-restricted.</t>
-	  <t>For the first router R in the homenet announcing an IPv4-uplink: Create a default IPv4-route via the next-hop for R acquired in #2.</t>
+	  <t>For the first router R visited in the traversal annuncing an IPv4-uplink: Create a default IPv4-route via the next-hop for R acquired in #2.</t>
 	  <t>For each assigned IPv4-prefix A of a router R: Create an IPv4-route to A via the next-hop for R acquired in #2.</t>
 	</list>
 	</t>
