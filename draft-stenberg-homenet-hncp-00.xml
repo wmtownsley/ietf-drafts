@@ -1129,10 +1129,10 @@ Edit time:     518 min
 
     <section title="Implementation">
 
-      <t>GPLv2 licensed experimental implementation of the protocol is
+      <t>A GPLv2-licensed experimental work-in-progress implementation of the protocol is
       available at <eref
       target="https://github.com/sbyx/hnetd/">https://github.com/sbyx/hnetd/</eref>. Comments
-      and/or pull requests are welcomed to that too.</t>
+      and/or pull requests are welcome too.</t>
     </section>
 
     <section title="Acknowledgements">
