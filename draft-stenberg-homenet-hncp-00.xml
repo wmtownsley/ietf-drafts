@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Fri Jan 31 14:32:57 2014 mstenber
-Edit time:     477 min
+Last modified: Fri Jan 31 18:50:36 2014 mstenber
+Edit time:     518 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -35,6 +35,17 @@ Edit time:     477 min
         <email>markus.stenberg@iki.fi</email>
       </address>
     </author>
+    <author initials="S" surname="Barth" fullname="Steven Barth">
+      <address>
+        <postal>
+          <street/>
+          <city></city>
+          <code></code>
+          <country></country>
+        </postal>
+        <email>stbarth@cisco.com</email>
+      </address>
+    </author>
     <date month="January" year="2014" />
 
     <!--    <workgroup></workgroup> -->
@@ -43,45 +54,35 @@ Edit time:     477 min
     <keyword>Homenet</keyword>
     <abstract>
 
-      <t>This document describes a minimalist state synchronization
-      protocol for home (or other small site) use that can be used for
-      various purposes, without being tied to particular routing
-      protocol. </t>
+      <t>This document describes HNCP, a minimalist state synchronization
+      protocol for a homenet (or other small site). </t>
 
     </abstract>
   </front>
   <middle>
     <section title="Introduction">
 
-      <t>In a home (or small other site) with multiple routers, there is
-      typically a need to share some state among the routers. There are two
-      logical alternatives how this state can be shared:
-
-      <list style="numbers">
-        <t>
-          Everything within routing protocol (the "huge routing protocol"
-          assumption). Current set of drafts that have been
-          promoted within the homenet working group
-          seem to promote this as the way to go (e.g. <xref
-          target="I-D.arkko-homenet-prefix-assignment"/>, <xref
-          target="I-D.stenberg-homenet-dnssdext-hybrid-proxy-ospf"/>). This
-          design choice makes the assumption that all routers do converge
-          to using some particular routing protocol.
-        </t>
-        <t>
-          Everything where it is needed (small, discrete pieces of
-          functionality such as separate routing, service discovery, and
-          prefix assignment daemons). 
-        </t>
-      </list>
-      </t>
-
-      <t>This draft describes a way to synchronize state across the
-      network, enabling use of arbitrary set of routing protocols in a home
-      as long as they support both importing and exporting of
-      source-specific route entries required to get the functionality
-      described in <xref target="I-D.troan-homenet-sadr"/>.</t>
-
+      <t>This document describes HNCP, a protocol designed to synchronize
+      state across a homenet (or small site) in order to facilitate
+      automated configuration within the site, integration with trusted
+      bootstrapping <xref target="I-D.behringer-homenet-trust-bootstrap"
+      /> and default perimeter detection <xref
+      target="I-D.kline-homenet-default-perimeter" />, automatic IP prefix
+      distribution <xref target="I-D.pfister-homenet-prefix-assignment"
+      />, and service discovery across multiple links within the homenet
+      as defined in <xref
+      target="I-D.stenberg-homenet-dnssd-hybrid-proxy-network-zeroconf"
+      />. </t>
+      
+      <t>HCNP is designed to provide enough bootstrapping information for
+      a routing protocol to operate independently without homenet-specific
+      extensions. In homenet environments where multiple IPv6 prefixes are
+      present, routing based on source and destination address is
+      necessary <xref target="I-D.troan-homenet-sadr"/>. Routing protocol
+      requirements for source and destination routing is described in
+      section 3 of <xref
+      target="I-D.baker-rtgwg-src-dst-routing-use-cases" />. </t>
+      
     </section>
 
     <section title="Data model">
@@ -152,7 +153,7 @@ Edit time:     477 min
           While Trickle should take care of sending of periodic status
           updates for most part (see caveats in <xref target="neighbor"
           />), the unicast and multicast packet reception should work as
-          follows:</t>
+        follows:</t>
 
         <t>
 
@@ -477,21 +478,21 @@ Edit time:     477 min
 
       </section>
 
-        <section anchor="user-tlv" title="Custom TLV (within/without node data TLV)">
-          <t>TLV with T=9, V=H-64(URI) .. opaque data</t>
-          <t>This TLV can be used to contain anything; the URI used should be
-          under control of the author of that specification. 
-          For example:</t>
-          
-          <t>V=H-64('http://example.com/author/json-for-hncp') .. '{"cool": "json
-          extension!"}'</t>
+      <section anchor="user-tlv" title="Custom TLV (within/without node data TLV)">
+        <t>TLV with T=9, V=H-64(URI) .. opaque data</t>
+        <t>This TLV can be used to contain anything; the URI used should be
+        under control of the author of that specification. 
+        For example:</t>
+        
+        <t>V=H-64('http://example.com/author/json-for-hncp') .. '{"cool": "json
+        extension!"}'</t>
 
-          <t>or</t>
+        <t>or</t>
 
-          <t>V=H-64('mailto:author@example.com') .. '{"cool": "json
-          extension!"}'</t>
+        <t>V=H-64('mailto:author@example.com') .. '{"cool": "json
+        extension!"}'</t>
 
-        </section>
+      </section>
 
       <section title="Authentication TLVs" anchor="auth-tlvs">
 
@@ -514,6 +515,406 @@ Edit time:     477 min
 
         </section>
       </section>
+    </section>
+
+
+    <section title="Border Discovery and Prefix Assignment">
+
+      <t>Automatic discovery of perimeter borders is desirable - where
+      possible - to ease the configuration of the homenet.  A router MUST
+      implement the <xref
+      target="I-D.kline-homenet-default-perimeter">Default Border
+      Definition</xref> taking into account the additional specifications
+      given in this section for classifying interfaces.  These additional
+      specifications are derived from the edge router interactions
+      described in the <xref target="RFC7084">Basic Requirements for IPv6
+      Customer Edge Routers</xref></t>
+      
+      <t>An interface MUST be considered external if at least one of the
+      following conditions is satisfied:
+
+      <list style="numbers">
+	<t>The interface has a fixed category classifying it as external.</t>
+
+	<t>A delegated prefix could be acquired by running a DHCPv6-client
+	on the interface.</t>
+
+	<t>An IPv4-address could be acquired by running a DHCP-client on
+        the interface.</t>
+
+	<t>HNCP authentication is enabled and there are routers on the
+        interface which could not be authenticated.</t>
+
+      </list>
+      </t>
+      
+      <t>Each router MUST continuously scan each active interface that does
+      not have a fixed category in order to dynamically reclassify it if
+      necessary.  The router therefore runs an appropriately configured
+      DHCP and DHCPv6-client as long as the interface is active including
+      states where it considers the interface to be internal. The router
+      SHOULD wait for a period of TBD seconds before treating a newly
+      activated or previously external interface as internal. Once it
+      treats a certain interface as internal it MUST start forwarding
+      traffic with appropriate source addresses between its internal
+      interfaces and allow internal traffic to reach external networks.
+      Once a router detects an interface to be external it MUST stop any
+      previously enabled internal forwarding. In addition it SHOULD
+      announce the acquired information for use in the homenet as described
+      in later sections of this draft if the interface appears to be
+      connected to an external network.</t>
+      
+      <t>In order to avoid conflicts between border discovery and homenet
+      routers running DHCP-servers each router MUST implement the following
+      mechanism based on <xref target="RFC3004">The User Class Option for
+      DHCP</xref> into its DHCP-logic:
+
+      <list>
+
+	<t>A homenet router running a DHCP-client on a homenet-interface
+	MUST include a DHCP User-Class consisting of the ASCII-String
+	"HOMENET".</t>
+
+	<t>A homenet router running a DHCP-server on a homenet-interface
+        MUST ignore DHCP-Requests containing a DHCP User-Class consisting
+        of the ASCII-String "HOMENET".</t>
+
+      </list>
+      </t>
+
+      <t>To distribute an external connection in the homenet an edge router
+      announces one or more delegated prefixes and associated
+      DHCP(v6)-encoded auxiliary information like recursive
+      DNS-servers. Each external connection is announced using one
+      container-TLV as follows:</t>
+      
+      <figure>
+	<artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          | Type: EXTERNAL-CONNECTION (41)|          Length: > 4          |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                          Nested TLVs                          |
+	</artwork>
+      </figure>
+      
+      
+      <t>Auxiliary connectivity information is encoded as a stream of
+      DHCPv6-attributes or DHCP-attributes placed inside a TLV of type
+      EXTERNAL-CONNECTION or DELEGATED-PREFIX (for IPv6 prefix-specific
+      information).  There MUST NOT be more than one instance of this TLV
+      inside a container and the order of the DHCP(v6)-attributes contained
+      within it MUST be preserved as long as the information contained does
+      not change. The TLVs are encoded as follows:</t>
+      
+      <figure>
+	<artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |    Type: DHCPV6-DATA (45)     |          Length: > 4          |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                    DHCPv6 attribute stream                    |
+	</artwork>
+      </figure>
+
+      <t>and</t>
+
+      <figure>
+	<artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |     Type: DHCP-DATA (44)      |          Length: > 4          |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                      DHCP attribute stream                    |
+	</artwork>
+      </figure>
+      
+      
+      <t>Each delegated prefix is encoded using one TLV inside an
+      EXTERNAL-CONNECTION TLV. For external IPv4 connections the prefix is
+      encoded in the form of an IPv4-mapped address and is usually from a
+      <xref target="RFC1597">private address range</xref>. The related TLV
+      is defined as follows.</t>
+      
+      <figure>
+	<artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |  Type: DELEGATED-PREFIX (42)  |         Length: >= 13         |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                   Valid until (milliseconds)                  |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                 Preferred until (milliseconds)                |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          | Prefix Length |                                               |
+          +-+-+-+-+-+-+-+-+        Prefix Address [+ nested TLVs]         +
+          |                                                               |
+	</artwork>
+      </figure>
+      
+      <t>
+	<list>
+	  <t>Valid until is the time in milliseconds the delegated prefix
+          is valid. The value is relative to the point in time the TLV is
+          first announced.</t>
+
+	  <t>Preferred until is the time in milliseconds the delegated
+          prefix is preferred. The value is relative to the point in time
+          the TLV is first announced.</t>
+
+	  <t>Prefix length specifies the number of significant bits in the
+          prefix.</t>
+
+	  <t>Prefix address is of variable length and contains the
+	  significant bits of the prefix padded with zeroes up to the next
+	  byte boundary.</t>
+
+	  <t>Nested TLVs might contain prefix-specific information like
+          DHCPv6-options.</t>
+
+	</list>
+      </t>
+
+      <t>In order for routers to use the distributed information, prefixes
+      and addresses have to be assigned to the interior links of the
+      homenet.  A router MUST therefore implement the algorithm defined in
+      <xref target="I-D.pfister-homenet-prefix-assignment">Prefix and
+      Address Assignment in a Home Network</xref>.  In order to announce
+      the assigned prefixes the following TLVs are defined.</t>
+      
+      <t>Each assigned prefix is given to an interior link and is encoded
+      using one TLVs.  Assigned IPv4 prefixes are stored as mapped
+      IPv4-addresses. The TLV is defined as follows:</t>
+
+      <figure>
+	<artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |  Type: ASSIGNED-PREFIX (43)   |          Length: >= 9         |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                        Link Identifier                        |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |  R. |A| Pref. | Prefix Length |                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+         Prefix Address        +
+          |                                                               |
+	</artwork>
+      </figure>
+      <t>
+	<list>
+	  <t>Link Identifier is the local HNCP identifier of the link the
+          prefix is assigned to.</t>
+
+	  <t>R. is reserved for future additions and must be set to 0 when
+          creating TLVs and ignored when parsing them.</t>
+
+	  <t>A is the authoritative flag which indicates that an assigment
+          is enforced and ignores usual collision detection rules.</t>
+
+	  <t>Pref. describes the preference of the assignment and can be
+          used to differentiate the importance of a given assignment over
+          others.</t>
+
+	  <t>Prefix length specifies the number of significant bits in the
+          prefix.</t>
+
+	  <t>Prefix address is of variable length and contains the
+	  significant bits of the prefix padded with zeroes up to the next
+	  byte boundary.</t>
+	</list>
+      </t>
+      
+      <t>In some cases (e.g. IPv4) there set of addresses is very limited
+      and stateless mechanisms are not really suitable.  Therefore HNCP can
+      manage router address in these cases by itself.  Each router
+      assigning an address to one of its links announces one TLV of the
+      following kind:</t>
+
+      <figure>
+	<artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |   Type: ROUTER-ADDRESS (46)   |           Length: 20          |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                         Router Address                        |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+	</artwork>
+      </figure>	
+      
+      <t>
+	<list>
+	  <t>Router Address is the address assigned to one of the router interfaces.</t>
+	</list>
+      </t>
+    </section>
+
+    <section anchor="how" title="Service Discovery">
+
+      <t>If service discovery support is required, it's semantics (if
+      supported) MUST be implemented according to <xref
+      target="I-D.stenberg-homenet-dnssd-hybrid-proxy-network-zeroconf"
+      /> . For full support, support for following three different new HNCP
+      TLVs is needed. However, only the DNS Delegated Zone TLV MUST be
+      supported, and the other two SHOULD be supported. </t>
+
+      <section anchor="delegated-zone-tlv" title="DNS Delegated Zone TLV">
+
+        <figure>
+          <artwork>
+            0                   1                   2                   3
+            0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |      Type=50                  |           Length              |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |                                                               |
+            |                           Address                             |
+            |                          (16 bytes)                           |
+            |                                                               |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |Reserved   |S|B| Zone (DNS label sequence - variable length)   |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            DNS Delegated Zone TLV
+          </artwork>
+        </figure>
+      </section>
+
+      <section anchor="domain-name-tlv" title="Domain Name TLV">
+
+        <figure>
+          <artwork>
+            0                   1                   2                   3
+            0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |      Type=51                  |           Length              |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |Domain (DNS label sequence - variable length)                  |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            Domain Name TLV
+          </artwork>
+        </figure>
+
+      </section>
+      <section anchor="router-name-tlv" title="Router Name TLV">
+        <figure>
+          <artwork>
+            0                   1                   2                   3
+            0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |      Type=52                  |           Length              |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |Name (not even null terminated - variable length)              |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            Router Name TLV
+          </artwork>
+        </figure>
+      </section>
+    </section>
+
+    <section title="Routing support">
+      <section title="Protocol Requirements">
+	<t>Each routing protocol needs to meet a certain set of criteria (either natively or through extensions) in order to be usable inside a homenet. These include:
+	<list>
+	  <t>The routing protocol complies with the <xref target="I-D.baker-rtgwg-src-dst-routing-use-cases">Requirements and Use Cases for Source/Destination Routing</xref></t>
+	  <t>The routing protocol supports and uses an autoconfiguration mechanism that allows it to operate without the need for prior individual configuration of each router.</t>
+	</list>
+	</t>
+	<t>A router MUST NOT announce that it supports a certain routing protocol if its implementation of the routing protocol does not meet these requirements,
+	e.g. it does not implement extensions that are necessary for compliance.</t>
+      </section>
+      
+      <section title="Announcement">
+	<t>Each router MUST announce any routing protocol that is supported and intended to be used in the homenet.
+	It SHOULD assign a preference value for each protocol that indicates its desire to use said protocol over other protocols it supports and SHOULD
+	make these values configurable.</t> 
+	
+	<t>Each router includes one HNCP TLV of type ROUTING-PROTOCOL for every such routing protocol. This TLV is defined as follows:</t>
+	<figure>
+	  <artwork>
+            0                   1                   2                   3
+            0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |  Type: ROUTING-PROTOCOL (60)  |           Length: 6           |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+            |  Protocol ID  |   Preference  |
+            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	  </artwork>
+	</figure>
+	<t>
+	  <list>
+	    <t>Protocol ID is one of:
+	    <list>
+	      <t>0 = reserved</t>
+	      <t>1 = Babel (dual-stack)</t>
+	      <t>2 = OSPFv3 (dual-stack)</t>
+	      <t>3 = IS-IS (dual-stack)</t>
+	    </list>
+	    </t>
+	    <t>Preference is a value from 0 to 255. If a router is neutral
+	    about a routing protocol it SHOULD use the value 128,
+	    otherwise a lower value indicating lower preference
+	    or a higher value indicating higher preference respectively.</t>
+	  </list>
+	</t>
+      </section>
+      
+      <section title="Protocol Selection">
+	<t>Whenever a router joins a homenet or detects that a new router has been added to or removed from the homenet
+	it MUST run the routing protocol selection algorithm.</t>
+	
+	<t>To select a routing protocol each router examines the announced protocols
+	and respective preference values of each router in the homenet and selects the protocol that:
+	<list style="numbers">
+	  <t>is understood by all routers in the homenet</t>
+
+	  <t>has the highest preference value among
+          all routers (calculated as sum of preference
+          values)</t>
+
+	  <t>has the highest protocol ID among those with the
+	  highest preference</t>
+	</list>
+	</t>
+	
+	<t>After selecting a new routing protocol which differs from the currently running one a router MUST stop the previously running protocol or mechanism
+	and ensure that all old routes have been removed. Thereafter the router MUST start the newly selected protocol or mechanism.
+	If no protocol could be selected, the router MUST stop the previously running routing protocol and instead
+	run the algorithm defined in the following section in order to setup its routing table for the network.</t>
+      </section>
+
+      <section title="Fallback Mechanism">
+	<t>In cases where there is no commonly understood routing protocol a fallback algorithm is run to setup routing and preserve interoperability among the homenet.
+	While not intended to replace a routing protocol this mechanism provides a valid - but not necessarily ideal - routing topology.
+	It solely relies on the uplink and neighbour information exchanged by HNCP itself 
+	and therefore does not require any additional data exchange. The algorithm is defined as follows:
+	
+	<list style="numbers">
+	  <t>Interpret the neighbour information received via HNCP as a graph of connected routers.</t>
+	  <t>Use breadth-first traversal to determine the next-hop and hop-count in the path to each router in the homenet:
+	  <list>
+	    <t>Start the traversal with the immediate neighbours of the router running the algorithm.</t>
+	    <t>Always visit the immediate neighbours of a router in ascending order of their router ID.</t>
+	    <t>Never visit a router more often than once.</t>
+	  </list>
+	  </t>
+	  <t>For each delegated prefix P of any router R in the homenet: Create a default route via the next-hop for R acquired in #2.
+	  Each such route MUST be source-restricted to only apply to traffic with a source address within P and its metric MUST reflect the hop-count to R.</t>
+	  <t>For each assigned prefix A of a router R:
+	  Create a route to A via the next-hop for R acquired in #2. Each such route MUST NOT be source-restricted.</t>
+	  <t>For the first router R in the homenet announcing an IPv4-uplink: Create a default IPv4-route via the next-hop for R acquired in #2.</t>
+	  <t>For each assigned IPv4-prefix A of a router R: Create an IPv4-route to A via the next-hop for R acquired in #2.</t>
+	</list>
+	</t>
+      </section>
+
     </section>
 
     <section title="Security Considerations">
@@ -555,7 +956,6 @@ Edit time:     477 min
 
     </section>
 
-
     <section anchor="const" title="Protocol constants">
       <t>Imin (for Trickle) >= 200 milliseconds</t>
       <t>Imax (for Trickle) >= 60 seconds</t>
@@ -572,7 +972,7 @@ Edit time:     477 min
       'few', e.g. 3 times.</t>
 
     </section>
- 
+    
     <section anchor="iana" title="IANA Considerations">
       
       <t>IANA should set up a registry for HNCP TLV types, with following
@@ -588,6 +988,16 @@ Edit time:     477 min
       <t>7: Node public key</t>
       <t>8: Neighbor</t>
       <t>9: Custom</t>
+      <t>41: External connection</t>
+      <t>42: Delegated prefix</t>
+      <t>43: Assigned prefix</t>
+      <t>44: DHCP-data</t>
+      <t>45: DHCPv6-data</t>
+      <t>46: Router-address</t>
+      <t>50: DNS Delegated Zone</t>
+      <t>51: Domain name</t>
+      <t>52: Node name</t>
+      <t>60: Routing protocol</t>
       <t>65535: Signature</t>
 
       <t>IANA should also allocate UDP port number IANA-UDP-PORT, as well as
@@ -599,9 +1009,51 @@ Edit time:     477 min
   <back>
     <references title="Normative references">
       <?rfc include="reference.RFC.6206.xml"?>
+
+      <reference anchor='I-D.pfister-homenet-prefix-assignment'>
+        <front>
+          <title>Prefix and Address Assignment in a Home Network</title>
+          <author initials='P' surname='Pfister' fullname='Pierre Pfister'>
+            <organization />
+          </author>
+          <author initials='J' surname='Arkko' fullname='J. Arkko'>
+            <organization />
+          </author>
+          <author initials='B' surname='Paterson' fullname='B. Paterson'>
+            <organization />
+          </author>
+          <date month='January' day='31' year='2014' />
+        </front>
+        <seriesInfo name='Internet-Draft' value='draft-pfister-homenet-prefix-assignment-00' />
+      </reference>
+
+
+
+      <reference anchor='I-D.stenberg-homenet-dnssd-hybrid-proxy-network-zeroconf'>
+        <front>
+
+          <title>Auto-Configuration of a Network of Hybrid
+          Unicast/Multicast DNS-Based Service Discovery Proxy Nodes
+          </title>
+
+          <author initials="M" surname="Stenberg" fullname="Markus Stenberg">
+            <organization />
+          </author>
+          <date month='January' day='31' year='2014' />
+        </front>
+        <seriesInfo name='Internet-Draft' value='draft-pfister-homenet-prefix-assignment-00' />
+      </reference>
+
+
     </references>
     <references title="Informative references">
+      <?rfc include="reference.RFC.7084.xml"?>
+      <?rfc include="reference.RFC.3004.xml"?>
+      <?rfc include="reference.RFC.1597.xml"?>
       <?rfc include="reference.I-D.draft-troan-homenet-sadr-01.xml"?>
+      <?rfc include="reference.I-D.draft-behringer-homenet-trust-bootstrap-00.xml"?>
+      <?rfc include="reference.I-D.draft-baker-rtgwg-src-dst-routing-use-cases-00.xml"?>
+      <?rfc include="reference.I-D.draft-kline-homenet-default-perimeter-00.xml"?>
       <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-04.xml"?>
       <?rfc include="reference.I-D.draft-stenberg-homenet-dnssdext-hybrid-proxy-ospf-00.xml"?>
     </references>
@@ -685,7 +1137,7 @@ Edit time:     477 min
 
     <section title="Acknowledgements">
 
-      <t>Thanks to Ole Troan, Steven Barth, Pierre Pfister and Mark Baugher
+      <t>Thanks to Ole Troan, Pierre Pfister, Mark Baugher and Mark Townsley
       for review comments.</t>
 
     </section>
