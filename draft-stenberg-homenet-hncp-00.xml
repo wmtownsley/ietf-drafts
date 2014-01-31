@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Thu Jan 30 09:12:26 2014 mstenber
-Edit time:     445 min
+Last modified: Fri Jan 31 14:32:57 2014 mstenber
+Edit time:     477 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -90,13 +90,13 @@ Edit time:     445 min
       has (and also knows for every other participating node):
       <list>
         <t>An unique, possibly long node identifier (the length does not
-        really matter very much, as only the hash of it is mainly used;
-        however, it should be unique across the network). It can be a
-        public key, or some other unique blob of binary data if signatures
-        are not used.</t>
+        really matter very much, as only the hash of it is used; however,
+        it should be unique across the network). It can be a public key, or
+        some other unique blob of binary data if signatures are not
+        used.</t>
 
         <t>A set of Type-Length-Value (TLV) data it wants to share with the
-        rest of the home. The TLVs are assumed to be sorted in ascending
+        rest of then etwork. The TLVs are assumed to be sorted in ascending
         order based on their binary content. </t>
 
         <t>Latest update number (a 32-bit number that MUST be incremented
@@ -120,9 +120,8 @@ Edit time:     445 min
       both link-local scoped IPv6 unicast and link-local scoped IPv6
       multicast messages to address IANA-MULTICAST-ADDRESS for
       transport. The protocol consists of Trickle-driven multicast status
-      messages, and unicast based neighbor state synchronization exchanges
-      (that can be also used for neighbor reachability checks if
-      required). </t>
+      messages, and unicast based neighbor state synchronization
+      exchanges. </t>
 
       <section title="Regular Trickle-driven status updates">
 
@@ -130,16 +129,17 @@ Edit time:     445 min
         state messages defined in <xref target="net-message"/> every time
         Trickle algorithm defined in <xref target="RFC6206"/> indicates
         they should on every link the protocol is active on. Separate
-        Trickle state MUST be maintained per each link.</t>
+        Trickle state MUST be maintained for each link.</t>
 
         <t>Trickle algorithm has 3 parameters; Imin, Imax and k. Imin and
-        Imax represent minimum and maximum time intervals during which at
-        least k Trickle update must be seen on a link. This specification
-        does NOT mandate any defaults, but given the timer reset on data
-        updates, k=1 SHOULD be used (as later retransmissions should handle
-        packet loss in any case). Imax MUST be at least a minute. Imin MUST
-        be at least 200 milliseconds (earliest transmissions may occur
-        at Imin/2 = 100 milliseconds given minimum values).</t>
+        Imax represent minimum and maximum values for I, time interval
+        during which at least k Trickle update must be seen on a link to
+        prevent local state transmission. This specification does NOT
+        mandate any defaults, but given the timer reset on data updates,
+        k=1 SHOULD be used (as later retransmissions should handle packet
+        loss in any case). Imax MUST be at least a minute. Imin MUST be at
+        least 200 milliseconds (earliest transmissions may occur at Imin/2
+        = 100 milliseconds given minimum values).</t>
 
         <t>When locally stored network state hash changes (either by local
         node TLV state change, or by receiving of more recent data from
@@ -150,10 +150,9 @@ Edit time:     445 min
       <section title="Handling of received packets" anchor="reception">
         <t>
           While Trickle should take care of sending of periodic status
-          updates for most part (see caveats in <xref target="neighbor" />
-          for potential unicast messages required to verify reachability of
-          a neighbor), the unicast and multicast packet reception should
-        work as follows:</t>
+          updates for most part (see caveats in <xref target="neighbor"
+          />), the unicast and multicast packet reception should work as
+          follows:</t>
 
         <t>
 
@@ -241,33 +240,38 @@ Edit time:     445 min
         identifier hashes for public keys is not considered here due to low
         likelihood of it.)</t>
 
-        <t>Regardless of how the node data for ANY node which node has changes,
-        any change should reset the Trickle timer.</t>
+        <t>Regardless of how the node data for ANY node which node has
+        changes, all Trickle instances MUST be considered inconsistent
+        (I=Imin + timer reset).</t>
       </section>
 
       <section title="Removal of whole nodes">
 
-        <t>Whenever Trickle is in inconsistent state, nodes SHOULD do
-        traversal of neighbor graph (by following the neighbor TLVs under
-        link TLVs of node TLVs to other node TLVs), and 
-        purge all node data for nodes which are no longer reachable. </t>
+        <t>Whenever set of node data has changed, nodes SHOULD do traversal
+        of neighbor graph (by following the neighbor TLVs defined in <xref
+        target="neighbor-tlv" /> from node to node), and after traversing
+        the reachable graph, purge the nodes that weren't traversed as they
+        are no longer reachable. </t>
+
       </section>
       
       <section title="Neighbor state maintenance" anchor="neighbor">
-        <t>Whenever unicast reply is received on a link from another node,
-        the node should be added as neighbor TLV for current node. If
-        nothing (for example - no router advertisements, no HNCP traffic)
-        is received from that neighbor in UNREACHABLE-TIME seconds and the
-        neighbor is not in neighbor discovery cache, at least
-        REACH-ATTEMPTS attempts to ping it with request network state
-        message defined in <xref target="req-net-message" /> SHOULD be sent
-        with increasing timeouts (e.g. 1, 2, 4 seconds). If even after
-        suitable period after the last message nothing is received, the
-        neighbor TLV MUST be removed so that there are no dangling
-        neighbors. As an alternative, if there is a layer 2 unreachability
-        notification of some sort available for either whole link or for
-        individual neighbor, it SHOULD be used to immediately trigger
-        removal of corresponding neighbor TLV(s).</t>
+
+        <t>Whenever multicast message or unicast reply is received on a
+        link from another node, the node should be added as neighbor TLV
+        for current node. If nothing (for example - no router
+        advertisements, no HNCP traffic) is received from that neighbor in
+        UNREACHABLE-TIME seconds and the neighbor is not in neighbor
+        discovery cache, at least REACH-ATTEMPTS attempts to ping it with
+        request network state message defined in <xref
+        target="req-net-message" /> SHOULD be sent with increasing timeouts
+        (e.g. 1, 2, 4 seconds). If even after suitable period after the
+        last message nothing is received, the neighbor TLV MUST be removed
+        so that there are no dangling neighbors. As an alternative, if
+        there is a layer 2 unreachability notification of some sort
+        available for either whole link or for individual neighbor, it
+        SHOULD be used to immediately trigger removal of corresponding
+        neighbor TLV(s).</t>
       </section>
 
     </section>
@@ -461,9 +465,14 @@ Edit time:     445 min
 
         <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
           <t>TLV with T=8, V=H(neighbor node identifier)  .. neighbor link id (4 octets).. local link id (4 octets)</t>
-          <t>This TLV indicates that the node in question vouches that
-          the specified neighbor is reachable by it on the local link id
-          given. </t>
+          <t>This TLV indicates that the node in question vouches that the
+          specified neighbor is reachable by it on the local link id
+          given. This reachability may be unidirectional (if no unicast
+          exchanges have been performed with the neighbor). The TLV at least 
+          guarantees that the node publishing the TLV has received traffic
+          from the neighbor recently. For guaranteed bidirectional
+          reachability, existence of both nodes' matching neighbor TLVs
+          should be checked. </t>
         </section>
 
       </section>
@@ -474,12 +483,12 @@ Edit time:     445 min
           under control of the author of that specification. 
           For example:</t>
           
-          <t>V=H-64('http://fingon.iki.fi/json-for-hncp') .. '{"cool": "json
+          <t>V=H-64('http://example.com/author/json-for-hncp') .. '{"cool": "json
           extension!"}'</t>
 
           <t>or</t>
 
-          <t>V=H-64('mailto:fingon+json+hncp@iki.fi') .. '{"cool": "json
+          <t>V=H-64('mailto:author@example.com') .. '{"cool": "json
           extension!"}'</t>
 
         </section>
@@ -517,7 +526,7 @@ Edit time:     445 min
         fingerprint or something equivalent should be used. </t>
         
         <t>Slightly more trustworthy (as long as you trust every router in
-        your home) is to use manually keyed IPsec using the per-port
+        your network) is to use manually keyed IPsec using the per-port
         granularity for port IANA-UDP-PORT UDP traffic. The painful part in
         this mode is setting up the pre-shared key as IKE cannot be used
         with multicast traffic. </t>
@@ -540,8 +549,8 @@ Edit time:     445 min
       <t>As performance optimization, instead of providing signatures for
       actual node data and the protocol messages themselves, it is also
       possible to provide signatures just for protocol messages. If doing
-      that, it is not possible to verify original source of node data any
-      more, but as long as the set of routers is still trusted, it should
+      that, it is no longer possible to verify original source of node
+      data, but as long as the set of routers is still trusted, it should
       not matter.</t>
 
     </section>
@@ -553,11 +562,11 @@ Edit time:     445 min
       <t>k (for Trickle) suggested to be 1</t>
 
       <t>ID-CONFLICT-COUNT and ID-CONFLICT-INTERVAL are left up
-      to the implementation</t>
+      to the implementation (they are local choices)</t>
 
       <t>UNREACHABLE-TIME should be proportional with Imax
       (smaller values not useful; orders of magnitude larger values
-      neither). </t>
+      neither). Again local choice.</t>
 
       <t>REACH-ATTEMPTS should depend on media used, but at least
       'few', e.g. 3 times.</t>
@@ -597,12 +606,17 @@ Edit time:     445 min
       <?rfc include="reference.I-D.draft-stenberg-homenet-dnssdext-hybrid-proxy-ospf-00.xml"?>
     </references>
     <section title="TODO">
-      <t>Consider if duplicate H(node identifier) detection should be
-      included. On one hand, would allow for shorter H functions. On the
-      other, complicates protocols and forces publishing of node identifier
-      contents. </t>
+
       <t>Is there a case for non-link-local unicast? Currently explicitly
       stating this is link-local only protocol. </t>
+
+      <t>Consider if using Trickle with k=1 really pays off, as we need to
+      do reachability checks if L2 doesn't provide them periodically in any
+      case. Using Trickle with k=inf would remove the need for unicast
+      reachability checks, but at cost of extra multicast traffic. On the
+      other hand, N*(N-1)/2 unicast reachability checks when lot of routers
+      share a link is not appealing either.</t>
+
     </section>
     <section title="Q &amp; A">
       <t>Q: Why not use TCP?</t>
