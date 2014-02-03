@@ -728,10 +728,10 @@ Edit time:     518 min
 	</list>
       </t>
       
-      <t>In some cases (e.g. IPv4) there set of addresses is very limited
-      and stateless mechanisms are not really suitable.  Therefore HNCP can
-      manage router address in these cases by itself.  Each router
-      assigning an address to one of its links announces one TLV of the
+      <t>In some cases (e.g. IPv4) the set of addresses is very limited
+      and stateless mechanisms are not really suitable for address assignment.
+      Therefore HNCP can manage router address in these cases by itself.  Each router
+      assigning an address to one of its interfaces announces one TLV of the
       following kind:</t>
 
       <figure>
