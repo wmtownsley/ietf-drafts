@@ -521,12 +521,10 @@ Edit time:     518 min
     <section title="Border Discovery and Prefix Assignment">
 
       <t>Automatic discovery of perimeter borders is desirable - where
-      possible - to ease the configuration of the homenet.  A router MUST
-      implement the <xref
-      target="I-D.kline-homenet-default-perimeter">Default Border
-      Definition</xref> taking into account the additional specifications
-      given in this section for classifying interfaces.  These additional
-      specifications are derived from the edge router interactions
+      possible - to ease the configuration of the homenet.  HNCP utilizes the
+      <xref target="I-D.kline-homenet-default-perimeter">Default Border
+      Definition</xref> and extends it with a border discovery algorithm
+      derived from the edge router interactions
       described in the <xref target="RFC7084">Basic Requirements for IPv6
       Customer Edge Routers</xref></t>
       
