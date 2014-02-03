@@ -938,7 +938,7 @@ Edit time:     518 min
       	documents.</t>
       
        	<t> HNCP is designed to integrate with trusted bootstrapping as 
-       	defined in <xref target="I-D.behringer-homenet-trust-bootstrap">, 
+	defined in <xref target="I-D.behringer-homenet-trust-bootstrap" />,
        	including the ability to digitally sign and encrypt messages
        	between routers.  This can be done in order to define a border as 
        	well as protect against malicious attacks and spoofing attempts from
@@ -976,7 +976,7 @@ Edit time:     518 min
       data itself, as long as the set of routers is trusted (i.e., no router
       in the set has itself been hacked to provide malicious node data) then 
       one can assume the node data is trusted because the router is trusted and
-      the data arrived in a protected protocol message.
+      the data arrived in a protected protocol message.</t>
 
     </section>
 
