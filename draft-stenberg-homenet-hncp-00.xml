@@ -1131,6 +1131,10 @@ Edit time:     518 min
       available at <eref
       target="https://github.com/sbyx/hnetd/">https://github.com/sbyx/hnetd/</eref>. Comments
       and/or pull requests are welcome too.</t>
+      
+      <t>An earlier implementation of the same principles and similar algorithms on top of OSPFv3 is
+      	available at <eref target="http://www.homewrt.org/doku.php?id=downloads">http://www.homewrt.org/doku.php?id=downloads</eref>.
+      </t>
     </section>
 
     <section title="Acknowledgements">
