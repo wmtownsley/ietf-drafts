@@ -854,6 +854,7 @@ Edit time:     518 min
 	      <t>1 = Babel (dual-stack)</t>
 	      <t>2 = OSPFv3 (dual-stack)</t>
 	      <t>3 = IS-IS (dual-stack)</t>
+	      <t>4 = RIP (dual-stack)</t>
 	    </list>
 	    </t>
 	    <t>Preference is a value from 0 to 255. If a router is neutral
