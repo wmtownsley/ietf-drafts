@@ -919,35 +919,63 @@ Edit time:     518 min
       <t>There are at least 3 ways in which this protocol can be deployed:
 
       <list>
-        <t>The simplest model is the "have faith"-mode where no encryption or
-        signing is used. Instead of a public key, a unique hardware
-        fingerprint or equivalent is used to identify routers. As with any
-        unencrypted and unauthenticated protocol this mode relies
-        on the security guarantees of the underlying layer and thus has
-        security properties similar to DHCP without RFC 3118 authentication.</t>
-        
-        <t>A slightly more trustworthy method on top of this is to ensure manually keyed IPsec
-        per-port granularity for port IANA-UDP-PORT UDP traffic. A pre-shared key has to be utilized in this case
-        though as IKE cannot be used with multicast traffic.</t>
+      
+      	<t>General security issues for Home Networks is discussed at length in 
+      	[Homenet Arch Ref]. The protocols used to setup IP 
+      	in home networks today have very little security enabled within the 
+      	control protocol itself. For example, DHCP has defined RFC 3118 to authenticate 
+      	DHCP messages, but this is very rarely implemented in large or small networks.  
+      	Further, while PPP can provide 
+      	secure authentication of both sides of a point to point link, it is most often 
+      	deployed with one-way authentication of the subscriber to the ISP, not
+      	the ISP to the subscriber. HNCP aims to make security as easy as possible
+      	for the implementer by including built-in capabilities for encryption
+      	and authentication of node data being exchanged as well as the protocol 
+      	messages themselves in as lightweight and flexible a manner as possible, 
+      	but it is ultimately up to the shipping system to
+      	take advantage of the protocol constructs defined in this and related
+      	documents.</t>
+      
+       	<t> HNCP is designed to integrate with trusted bootstrapping as 
+       	defined in <xref target="I-D.behringer-homenet-trust-bootstrap">, 
+       	including the ability to digitally sign and encrypt messages
+       	between routers.  This can be done in order to define a border as 
+       	well as protect against malicious attacks and spoofing attempts from
+       	inside or outside the border. </t>	
+       
+      	<t>In the absence of a shared key or public/private key pair, HNCP itself
+      	sends messages as clear text which is as secure, or insecure, as the 
+       	security of the link below, as discussed in <xref 
+       	target="I-D.kline-homenet-default-perimeter" />. When no unique public
+       	key is available, a hardware fingerprint or equivalent to identify 
+       	routers must be available for use by HNCP.</t>
+       	
+        <t>IPsec could be used, though it requires manually keyed IPsec
+        per-port granularity for port IANA-UDP-PORT UDP traffic. 
+        A pre-shared key has to be utilized in this case
+        as well given IKE cannot be used with multicast traffic.</t>
         
         <t>If even every router cannot be trusted, or some more guarantees
         about source of particular node status updates is desired, real
         public and private keys should be used to create signatures and 
-        verify them both on per-node data TLVs, as well as whole packet level.
+        verify them in HNCP on both on per-node data TLVs as well as across the entire message.
         In this mode, care must be taken in rate limiting verification of invalid packets,
         as otherwise denial of service may occur due to exhaustion of
-        computation resources on a router.
+        computation resources (unless sufficient cryptographic support 
+        is known to be present in the home router).
         </t>
         
       </list>
       </t>
 
-      <t>As performance optimization, instead of providing signatures for
+      <t>As a performance optimization, instead of providing signatures for
       actual node data and the protocol messages themselves, it is also
-      possible to provide signatures just for protocol messages. If doing
-      that, it is no longer possible to verify original source of node
-      data, but as long as the set of routers is still trusted, it should
-      not matter.</t>
+      possible to provide signatures just for protocol messages. While 
+      this means it is no longer possible to verify the original source of the node
+      data itself, as long as the set of routers is trusted (i.e., no router
+      in the set has itself been hacked to provide malicious node data) then 
+      one can assume the node data is trusted because the router is trusted and
+      the data arrived in a protected protocol message.
 
     </section>
 
