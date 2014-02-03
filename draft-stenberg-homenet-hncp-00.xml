@@ -63,7 +63,7 @@ Edit time:     521 min
     <section title="Introduction">
 
       <t>This document describes HNCP, a protocol designed to synchronize
-      state across a homenet (or small site) in order to facilitate
+      state across a Home Network (Homenet) in order to facilitate
       automated configuration within the site, integration with trusted
       bootstrapping <xref target="I-D.behringer-homenet-trust-bootstrap"
       /> and default perimeter detection <xref
@@ -74,12 +74,12 @@ Edit time:     521 min
       target="I-D.stenberg-homenet-dnssd-hybrid-proxy-network-zeroconf"
       />. </t>
       
-      <t>HCNP is designed to provide enough bootstrapping information for
+      <t>HCNP is designed to provide enough information for
       a routing protocol to operate independently without homenet-specific
       extensions. In homenet environments where multiple IPv6 prefixes are
       present, routing based on source and destination address is
       necessary <xref target="I-D.troan-homenet-sadr"/>. Routing protocol
-      requirements for source and destination routing is described in
+      requirements for source and destination routing are described in
       section 3 of <xref
       target="I-D.baker-rtgwg-src-dst-routing-use-cases" />. </t>
       
@@ -87,32 +87,32 @@ Edit time:     521 min
 
     <section title="Data model">
 
-      <t>Data model of the HNCP protocol is simple: Every participating node
+      <t>The data model of the HNCP protocol is simple: Every participating node
       has (and also knows for every other participating node):
       <list>
-        <t>An unique, possibly long node identifier (the length does not
-        really matter very much, as only the hash of it is used; however,
-        it should be unique across the network). It can be a public key, or
-        some other unique blob of binary data if signatures are not
-        used.</t>
+        <t>A unique node identifier. It may be a public key, unique hardware ID, or
+        some other unique blob of binary data which HCNP can run a hash upon to obtain
+        a node identifer that is very likely unique among the set of routers
+        in the Homenet.</t>
 
-        <t>A set of Type-Length-Value (TLV) data it wants to share with the
-        rest of then etwork. The TLVs are assumed to be sorted in ascending
-        order based on their binary content. </t>
+        <t>A set of Type-Length-Value (TLV) data it wants to share with other
+        routers. The set of TLVs have a well-defined order based on ascending 
+        binary content that is used to quickly identify changes in the set as they
+        occur relative to the set in other routers. </t>
 
-        <t>Latest update number (a 32-bit number that MUST be incremented
-        whenever the TLV data changes).</t>
+        <t>Latest update sequence number. A four octet number that is incremented
+        anytime TLV data changes are detected.</t>
 
-        <t>Relative time since publishing of the current TLV data set (in
-        milliseconds).</t>
+        <t>Relative time, in milliseconds, since last publishing of the current TLV data set. </t>
 
       </list>
       </t>
       
-      <t>If signatures are in use, every node also has their own private
-      key that corresponds with their public key. The private key is not
-      shared across the network, but is instead used for signatures of
-      messages and node state updates if desirable.</t>
+      <t>If HNCP security is enabled, each node will have a public/private key
+      pair defined. The public key is used to encrypt and/or create signatures for messages and
+      node state updates. The private key is used to decrypt and/or verify signatures of
+      messages and node state updates and never sent across the network by HNCP.</t>
+      
     </section>
 
     <section title="Operation">
