@@ -919,31 +919,28 @@ Edit time:     518 min
       <t>There are at least 3 ways in which this protocol can be deployed:
 
       <list>
+        <t>The simplest model is the "have faith"-mode where no encryption or
+        signing is used. Instead of a public key, a unique hardware
+        fingerprint or equivalent is used to identify routers. As with any
+        unencrypted and unauthenticated protocol this mode relies
+        on the security guarantees of the underlying layer and thus has
+        security properties similar to DHCP without RFC 3118 authentication.</t>
         
-        <t>Simplest model is "have faith" mode; no security, no
-        signatures. Instead of public key, just some unique hardware
-        fingerprint or something equivalent should be used. </t>
-        
-        <t>Slightly more trustworthy (as long as you trust every router in
-        your network) is to use manually keyed IPsec using the per-port
-        granularity for port IANA-UDP-PORT UDP traffic. The painful part in
-        this mode is setting up the pre-shared key as IKE cannot be used
-        with multicast traffic. </t>
+        <t>A slightly more trustworthy method on top of this is to ensure manually keyed IPsec
+        per-port granularity for port IANA-UDP-PORT UDP traffic. A pre-shared key has to be utilized in this case
+        though as IKE cannot be used with multicast traffic.</t>
         
         <t>If even every router cannot be trusted, or some more guarantees
         about source of particular node status updates is desired, real
         public and private keys should be used to create signatures and 
         verify them both on per-node data TLVs, as well as whole packet level.
+        In this mode, care must be taken in rate limiting verification of invalid packets,
+        as otherwise denial of service may occur due to exhaustion of
+        computation resources on a router.
         </t>
         
       </list>
       </t>
-      
-      <t>In the "have faith mode", the protocol is wide open to a variety
-      of attacks. On the other hand, in the in-protocol cryptography mode,
-      care must be taken in rate limiting verification of invalid packets,
-      as otherwise denial of service may occur due to exhaustion of
-      computation resources on a router. </t>
 
       <t>As performance optimization, instead of providing signatures for
       actual node data and the protocol messages themselves, it is also
