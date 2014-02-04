@@ -169,28 +169,26 @@ Edit time:     559 min
 
     <section title="Protocol Messages">
 
-      <t>All messages are encoded as a sequence of <xref target="tlvs">TLV
-      objects</xref> described in with no 
-      fixed fields before or after the sequence. This 
-      section describes which set of TLVs MUST or MAY be
-      present in each message type. </t>
+      <t>Protocol messages are encoded as purely as a sequence of <xref target="tlvs">TLV
+      objects</xref>. This section describes which set of TLVs MUST or MAY be present
+      in a given message. </t>
       
-      <t>In order to facilitate fast detection of local
-      state vs. that in a received message, all TLVs in every
+      <t>In order to facilitate fast comparison of local
+      state with that in a received message update, all TLVs in every
       encoding scope (either root level, within the message 
       itself, or within a container TLV) MUST be placed
       in ascending order based on the binary comparison of both
-      TLV header and value. By design, the MUST-be-present
-      TLVs in this section have the lowest available type values, 
+      TLV header and value. By design, the
+      TLVs which MUST be present have the lowest available type values, 
       ensuring they will naturally occur at the start of the 
-      Protocol Message.
+      Protocol Message, resembling a fixed format preamble.
       </t>
       
      
-      <section title="Network State Message (NetState)"
+      <section title="Network State Update (NetState)"
                anchor="net-message">
                
-        <t>The NetState Message SHOULD be sent as a multicast message.</t>
+        <t>This Message SHOULD be sent as a multicast message.</t>
                
         <t>The following TLVs MUST be present at the start of the message:
         <list>
@@ -199,22 +197,23 @@ Edit time:     559 min
         </list>
         </t>
 
-        <t>There SHOULD be also _all_ <xref
-        target="node-state">node state TLV(s)</xref>, if and only if inserting all of them within
-        the message would not exceed the minimum IPv6 MTU. Sending of just
-        some node state TLV(s) MUST NOT be done as it would confuse the
-        <xref
-        target="reception">packet reception algorithm</xref>.</t>
-
-        <t>MAY be present: <xref target="auth-tlvs">authentication TLVs</xref>.</t>
+	<t>The NetState Message MAY contain <xref target="node-state">node state TLV(s)</xref>.
+	If so, either all node state TLVs are included (referred to as a "long" NetState Message), or 
+	none are included (refered to as a "short" NetState Message). The NetState Message
+	MUST NOT contain only a portion of node state TLVs as this could cause problems with the
+	<xref target="reception"> Protocol Message Processing</xref> algorithm. Finally, if
+	the long version of the NetState message would exceed the minimum IPv6 MTU when sent, the short 
+	version of the NetState message MUST be used instead.</t>
+	
+        <t>If HCNP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
 
       </section>
 
-      <section title="Network State Message Request, (NetState-Req)"
+      <section title="Network State Request, (NetState-Req)"
                anchor="req-net-message">
                
-        <t>the NetState-Req Message MUST be sent as a unicast message.</t>
-               
+	<t>This Message MUST be sent as a unicast message.</t>
+
         <t>The following TLVs MUST be present at the start of the message:
         <list>
           <t><xref target="node-id">node link TLV</xref>.</t>
@@ -222,12 +221,14 @@ Edit time:     559 min
         </list>
         </t>
 
-        <t>MAY be present: <xref target="auth-tlvs">authentication TLVs</xref>.</t>
+        <t>If HCNP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
 
       </section>
 
- 	<section title="Request node(s) data message (unicast)"
+ 	<section title="Node Data Request (Node-Req)"
                anchor="req-node-message">
+
+        <t>This Message MUST be sent as a unicast message.</t>
 
         <t>MUST be present:
         <list>
@@ -241,8 +242,11 @@ Edit time:     559 min
 
       </section>
       
-      <section title="State-Reply (unicast)"
+      <section title="Network and Node State Reply (NetNode-Reply)"
                anchor="reply-message">
+               
+	<t>This Message MUST be sent as a unicast message.</t>
+               
         <t>MUST be present:
         <list>
           <t><xref target="node-id">node link TLV</xref>.</t>
