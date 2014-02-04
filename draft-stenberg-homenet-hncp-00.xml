@@ -133,16 +133,15 @@ Edit time:     559 min
       <t>The protocol is designed to run on UDP port IANA-UDP-PORT, using
       both link-local scoped IPv6 unicast and link-local scoped IPv6
       multicast messages to address IANA-MULTICAST-ADDRESS for
-      transport. The protocol consists of Trickle <xref target="RFC6206"/>
+      transport. The protocol consists of <xref target="RFC6206">Trickle</xref> 
       driven multicast status messages to indicate changes in shared TLV
       data, and unicast state synchronization message exchanges when the
       Trickle state is found to be inconsistent.</t>
 
       <section title="Trickle-Driven Status Updates" anchor="trickle-updates">
 
-        <t>Each node MUST send link-local multicast network state messages
-        defined in <xref target="net-message"/> each time the Trickle
-        algorithm defined in <xref target="RFC6206"/> indicates they should
+        <t>Each node MUST send link-local multicast <xref target="net-message">network state messages</xref>
+        each time the <xref target="RFC6206">Trickle algorithm</xref> defined in indicates they should
         on each link the protocol is active on. When the locally stored
         network state hash changes (either by a local node event that
         affects the TLV data, or upon receipt of more recent data from
@@ -170,8 +169,8 @@ Edit time:     559 min
 
     <section title="Protocol Messages">
 
-      <t>All messages are encoded as a sequence of TLV
-      objects described in <xref target="tlvs"/>, with no 
+      <t>All messages are encoded as a sequence of <xref target="tlvs">TLV
+      objects</xref> described in with no 
       fixed fields before or after the sequence. This 
       section describes which set of TLVs MUST or MAY be
       present in each message type. </t>
@@ -195,19 +194,19 @@ Edit time:     559 min
                
         <t>The following TLVs MUST be present at the start of the message:
         <list>
-          <t>node link TLV (defined in <xref target="node-id"/>).</t>
-          <t>network state TLV (defined in <xref target="net-hash"/>).</t>
+          <t><xref target="node-id">node link TLV</xref>.</t>
+          <t><xref target="net-hash">network state TLV</xref>.</t>
         </list>
         </t>
 
-        <t>There SHOULD be also _all_ node state TLV(s) (defined in <xref
-        target="node-state"/>), if and only if inserting all of them within
+        <t>There SHOULD be also _all_ <xref
+        target="node-state">node state TLV(s)</xref>, if and only if inserting all of them within
         the message would not exceed the minimum IPv6 MTU. Sending of just
         some node state TLV(s) MUST NOT be done as it would confuse the
-        packet reception algorithm described in <xref
-        target="reception"/>. </t>
+        <xref
+        target="reception">packet reception algorithm</xref>.</t>
 
-        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
+        <t>MAY be present: <xref target="auth-tlvs">authentication TLVs</xref>.</t>
 
       </section>
 
@@ -218,12 +217,12 @@ Edit time:     559 min
                
         <t>The following TLVs MUST be present at the start of the message:
         <list>
-          <t>node link TLV (defined in <xref target="node-id"/>).</t>
-          <t>request network state TLV (defined in <xref target="req-net-hash"/>).</t>
+          <t><xref target="node-id">node link TLV</xref>.</t>
+          <t><xref target="req-net-hash">request network state TLV</xref>.</t>
         </list>
         </t>
 
-        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
+        <t>MAY be present: <xref target="auth-tlvs">authentication TLVs</xref>.</t>
 
       </section>
 
@@ -232,13 +231,13 @@ Edit time:     559 min
 
         <t>MUST be present:
         <list>
-          <t>node link TLV  (defined in <xref target="node-id"/>).</t>
-          <t>one or more request node data TLVs (defined in <xref
-          target="req-node-data" />)).</t>
+          <t><xref target="node-id">node link TLV</xref>.</t>
+          <t>one or more <xref
+          target="req-node-data">request node data TLVs</xref>.</t>
         </list>
         </t>
 
-        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
+        <t>MAY be present: <xref target="auth-tlvs">authentication TLVs</xref>.</t>
 
       </section>
       
@@ -246,14 +245,13 @@ Edit time:     559 min
                anchor="reply-message">
         <t>MUST be present:
         <list>
-          <t>node link TLV  (defined in <xref target="node-id"/>).</t>
+          <t><xref target="node-id">node link TLV</xref>.</t>
 
-          <t>network state TLV (defined in <xref target="net-hash" />)
-          and node state TLV (defined in <xref target="node-state" />) for
+          <t><xref target="net-hash">network state TLV</xref>
+          and <xref target="node-state">node state TLV</xref> for
           every known node by the sender, or</t>
 
-          <t>one or more combinations of node state and node data TLVs
-          (defined in <xref target="node-data" />).</t>
+          <t>one or more combinations of node state and <xref target="node-data">node data TLVs</xref>.</t>
 
         </list>
         </t>
@@ -265,8 +263,8 @@ Edit time:     559 min
 
       <section title="HNCP Protocol Message Processing" anchor="reception">
       
-        <t>The majority of status updates among known nodes are handled via the Trickle-Driven 
-        updates described in <xref target="trickle-updates"/>. This section describes processing 
+        <t>The majority of status updates among known nodes are handled via the <xref target="trickle-updates">Trickle-Driven 
+        updates </xref>. This section describes processing 
 	of messages as received, along with associated actions or responses.</t>
         
         <t>HCNP is designed to operate between directly connected neighbors on 
@@ -283,25 +281,25 @@ Edit time:     559 min
         Trickle state as consistent. In that case, there is no need to
         proceed further. If the hashes do not match, consider Trickle state
         as inconsistent. In that case, if the message was in "short format"
-        (that is, it contained no node state TLVs), reply with a NetState-Req Message
-        <xref target="req-net-message"/>. If the message
+        (that is, it contained no node state TLVs), reply with a 
+        <xref target="req-net-message">NetState-Req Message</xref>. If the message
         was in long format (it contained one or more node state TLVs),
-        reply with NodeState-Req defined in <xref
-        target="req-node-message"/> for any nodes for which local information
+        reply with <xref
+        target="req-node-message">NodeState-Req</xref> for any nodes for which local information
         is outdated (local update number is lower than that within the
         message) or missing. Note that if local information is more recent than
         that of the neighbor, there is no need to send a message at all.</t>
 
-        <t>NetState-Req <xref target="req-net-message"/>: Provide requested data in a 
+        <t><xref target="req-net-message">NetState-Req</xref>: Provide requested data in a 
         State-Reply Message containing Network State TLVs.</t>
         
-        <t>NodeState-Req <xref target="req-node-message"/>: Provide requested data in a 
+        <t><xref target="req-node-message">NodeState-Req</xref>: Provide requested data in a 
         State-Reply Message containing Node State and Node Data TLVs. </t>
 
-        <t>State-Reply <xref target="reply-message"/>: If the message contains node state TLVs that are more
+        <t><xref target="reply-message">State-Reply</xref>: If the message contains node state TLVs that are more
         recent than local state (higher update number or we lack the
-        node data altogether), reply with a NodeState-Req 
-        <xref target="req-node-message"/> for the corresponding nodes. If the message contains 
+        node data altogether), reply with a 
+        <xref target="req-node-message">NodeState-Req</xref> for the corresponding nodes. If the message contains 
         node data TLVs which are more recent than the local values for the corresponding node,
         update local state and reset Trickle.</t>
 	</list>
@@ -312,8 +310,8 @@ Edit time:     559 min
         data TLV's content changes, the update number should be
         incremented.</t>
         
-        <t>If a message containing node state TLVs described in <xref
-        target="node-state" /> is received via unicast or multicast with
+        <t>If a message containing <xref
+        target="node-state">node state TLVs</xref> is received via unicast or multicast with
         the node's own node identifier and a higher update number than current local value,
         or the same update number and different hash, there is an error. 
         A recommended default
@@ -342,8 +340,8 @@ Edit time:     559 min
         advertisements, no HNCP traffic) is received from that neighbor in
         UNREACHABLE-TIME seconds and the neighbor is not in neighbor
         discovery cache, at least REACH-ATTEMPTS attempts to ping it with
-        request network state message defined in <xref
-        target="req-net-message" /> SHOULD be sent with increasing timeouts
+        <xref
+        target="req-net-message">request network state message</xref> SHOULD be sent with increasing timeouts
         (e.g. 1, 2, 4 seconds). If even after suitable period after the
         last message nothing is received, the neighbor TLV MUST be removed
         so that there are no dangling neighbors. As an alternative, if
@@ -356,8 +354,8 @@ Edit time:     559 min
       <section title="Purging Unreachable Nodes">
 
         <t>Whenever set of node data has changed, nodes SHOULD traverse
-        of the neighbor graph by following the neighbor TLVs defined in <xref
-        target="neighbor-tlv" /> from node to node, purging nodes that were 
+        of the neighbor graph by following the <xref
+        target="neighbor-tlv">neighbor TLVs</xref> from node to node, purging nodes that were 
         not traversed as they are no longer reachable directly by any neighbor. </t>
 
       </section>
@@ -1068,8 +1066,7 @@ Edit time:     559 min
       to the shipping system to take advantage of the protocol constructs
       defined.</t>
       
-      <t>HNCP is designed to integrate with trusted bootstrapping as
-      defined in <xref target="I-D.behringer-homenet-trust-bootstrap" />,
+      <t>HNCP is designed to integrate with <xref target="I-D.behringer-homenet-trust-bootstrap">trusted bootstrapping</xref>
       including the ability to authenticate messages between nodes.  This
       authentication can be used to securely define a border as well as
       protect against malicious attacks and spoofing attempts from inside
