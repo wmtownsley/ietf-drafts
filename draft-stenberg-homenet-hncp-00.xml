@@ -84,6 +84,14 @@ Edit time:     548 min
       target="I-D.baker-rtgwg-src-dst-routing-use-cases" />. </t>
       
     </section>
+    
+    <section anchor="kwd" title='Requirements language'>
+
+      <t>In this document, the key words "MAY", "MUST, "MUST NOT",
+      "OPTIONAL", "RECOMMENDED", "SHOULD", and "SHOULD NOT", are to be
+      interpreted as described in <xref target='RFC2119' />.</t>
+
+    </section>
 
     <section title="Data model">
 
@@ -1139,6 +1147,7 @@ Edit time:     548 min
   </middle>
   <back>
     <references title="Normative references">
+      <?rfc include="reference.RFC.2119.xml"?>
       <?rfc include="reference.RFC.6206.xml"?>
 
       <reference anchor='I-D.pfister-homenet-prefix-assignment'>
