@@ -136,9 +136,9 @@ Edit time:     559 min
       transport. The protocol consists of Trickle <xref target="RFC6206"/>
       driven multicast status messages to indicate changes in shared TLV
       data, and unicast state synchronization message exchanges when the
-      Trickle state is found to be inconsistent. </t>
+      Trickle state is found to be inconsistent.</t>
 
-      <section title="Trickle-Driven Status Updates", anchor="trickle-updates">
+      <section title="Trickle-Driven Status Updates" anchor="trickle-updates">
 
         <t>Each node MUST send link-local multicast network state messages
         defined in <xref target="net-message"/> each time the Trickle
@@ -181,7 +181,7 @@ Edit time:     559 min
       encoding scope (either root level, within the message 
       itself, or within a container TLV) MUST be placed
       in ascending order based on the binary comparison of both
-      TLV header and value. <t>By design, the MUST be present 
+      TLV header and value. By design, the MUST-be-present
       TLVs in this section have the lowest available type values, 
       ensuring they will naturally occur at the start of the 
       Protocol Message.
@@ -226,8 +226,6 @@ Edit time:     559 min
         <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
       </section>
-     
-        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
  	<section title="Request node(s) data message (unicast)"
                anchor="req-node-message">
@@ -269,7 +267,7 @@ Edit time:     559 min
       
         <t>The majority of status updates among known nodes are handled via the Trickle-Driven 
         updates described in <xref target="trickle-updates"/>. This section describes processing 
-        of messages as received, along with associated actions or responses.
+	of messages as received, along with associated actions or responses.</t>
         
         <t>HCNP is designed to operate between directly connected neighbors on 
         a shared link using link-local IPv6 addresses. If the source address 
@@ -278,7 +276,7 @@ Edit time:     559 min
         IPv6 link-local unicast or IPv6 link-local multicast address,
         packet SHOULD be dropped.</t>
         
-        <t>Upon receipt of:</t>
+        <t>Upon receipt of:
 	<list>
         <t>NetState Message <xref target="net-message"/>: If the network state hash within the
         message matches hash of locally stored network state, consider
@@ -307,6 +305,7 @@ Edit time:     559 min
         node data TLVs which are more recent than the local values for the corresponding node,
         update local state and reset Trickle.</t>
 	</list>
+	</t>
 
         <t>Each node is responsible for publishing only a valid set of data
         in TLVs contained within it's own node data TLV. Whenever the node
