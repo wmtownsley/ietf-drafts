@@ -552,22 +552,6 @@ Edit time:     521 min
       </list>
       </t>
       
-      <t>Each router MUST continuously scan each active interface that does
-      not have a fixed category in order to dynamically reclassify it if
-      necessary.  The router therefore runs an appropriately configured
-      DHCP and DHCPv6-client as long as the interface is active including
-      states where it considers the interface to be internal. The router
-      SHOULD wait for a period of TBD seconds before treating a newly
-      activated or previously external interface as internal. Once it
-      treats a certain interface as internal it MUST start forwarding
-      traffic with appropriate source addresses between its internal
-      interfaces and allow internal traffic to reach external networks.
-      Once a router detects an interface to be external it MUST stop any
-      previously enabled internal forwarding. In addition it SHOULD
-      announce the acquired information for use in the homenet as described
-      in later sections of this draft if the interface appears to be
-      connected to an external network.</t>
-      
       <t>In order to avoid conflicts between border discovery and homenet
       routers running DHCP-servers each router MUST implement the following
       mechanism based on <xref target="RFC3004">The User Class Option for
@@ -585,6 +569,22 @@ Edit time:     521 min
 
       </list>
       </t>
+      
+      <t>Each router MUST continuously scan each active interface that does
+      not have a fixed category in order to dynamically reclassify it if
+      necessary.  The router therefore runs an appropriately configured
+      DHCP and DHCPv6-client as long as the interface is active including
+      states where it considers the interface to be internal. The router
+      SHOULD wait for a period of TBD seconds before treating a newly
+      activated or previously external interface as internal. Once it
+      treats a certain interface as internal it MUST start forwarding
+      traffic with appropriate source addresses between its internal
+      interfaces and allow internal traffic to reach external networks.
+      Once a router detects an interface to be external it MUST stop any
+      previously enabled internal forwarding. In addition it SHOULD
+      announce the acquired information for use in the homenet as described
+      in later sections of this draft if the interface appears to be
+      connected to an external network.</t>
 
       <t>To distribute an external connection in the homenet an edge router
       announces one or more delegated prefixes and associated
