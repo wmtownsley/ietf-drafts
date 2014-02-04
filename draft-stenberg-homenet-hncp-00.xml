@@ -54,7 +54,7 @@ Edit time:     559 min
     <keyword>Homenet</keyword>
     <abstract>
 
-      <t>This document describes HNCP, a minimalist state synchronization
+      <t>This document describes the HomeNet Control Protocol (HNCP), a minimalist state synchronization
       protocol for a homenet (or other small site). </t>
 
     </abstract>
@@ -62,7 +62,7 @@ Edit time:     559 min
   <middle>
     <section title="Introduction">
 
-      <t>This document describes HNCP, a protocol designed to synchronize
+      <t>HNCP is designed to synchronize
       state across a Home Network (Homenet) in order to facilitate
       automated configuration within the site, integration with trusted
       bootstrapping <xref target="I-D.behringer-homenet-trust-bootstrap"
@@ -75,13 +75,15 @@ Edit time:     559 min
       />. </t>
       
       <t>HCNP is designed to provide enough information for
-      a routing protocol to operate independently without homenet-specific
+      a routing protocol to operate without homenet-specific
       extensions. In homenet environments where multiple IPv6 prefixes are
       present, routing based on source and destination address is
       necessary <xref target="I-D.troan-homenet-sadr"/>. Routing protocol
       requirements for source and destination routing are described in
       section 3 of <xref
       target="I-D.baker-rtgwg-src-dst-routing-use-cases" />. </t>
+      
+      
       
     </section>
     
@@ -136,7 +138,7 @@ Edit time:     559 min
       data, and unicast state synchronization message exchanges when the
       Trickle state is found to be inconsistent. </t>
 
-      <section title="Trickle-driven Status Updates">
+      <section title="Trickle-Driven Status Updates", anchor="trickle-updates">
 
         <t>Each node MUST send link-local multicast network state messages
         defined in <xref target="net-message"/> each time the Trickle
@@ -165,130 +167,33 @@ Edit time:     559 min
         </t>
       </section>
 
-      <section title="Handling of received packets" anchor="reception">
-        <t>
-          While Trickle should take care of sending of periodic status
-          updates for most part (see caveats in <xref target="neighbor"
-          />), the unicast and multicast packet reception SHOULD work as
-        follows, with replies sent via unicast:</t>
 
-        <t>If source address is not IPv6 link-local unicast address, packet
-        SHOULD be ignored. Similarly, if the destination address is not
-        IPv6 link-local unicast or IPv6 link-local multicast address,
-        packet SHOULD be ignored.</t>
+    <section title="Protocol Messages">
 
-        <t>If it is a network state message defined in <xref
-        target="net-message"/>: If the network state hash within the
-        message matches hash of locally stored network state, consider
-        Trickle state as consistent. In that case, there is no need to
-        proceed further. If the hashes do not match, consider Trickle state
-        as inconsistent. In that case, if the message was in short format
-        (that is, it contained no node state TLVs), reply with a network
-        state request defined in <xref target="req-net-message"/> using
-        IPv6 unicast to the sender of the multicast message. If the message
-        was in long format (it contained one or more node state TLVs),
-        reply with node state request defined in <xref
-        target="req-node-message"/> for any nodes for which our information
-        is outdated (our update number is lower than that within the
-        message) or missing using IPv6 unicast to the sender of the
-        multicast message. Note that if our information is more recent than
-        that of the neighbor, this may require sending nothing at all.</t>
-
-        <t>If it is a request (either network state request defined in
-        <xref target="req-net-message"/> 
-        , or node state request defined in 
-        <xref target="req-node-message"/> 
-        ), provide the required data.</t>
-
-        <t>If it is a reply which contains node state TLVs that seem more
-        recent than ours for that node (higher update number or we lack the
-        node data altogether), reply with a node state request defined in
-        <xref target="req-node-message"/> for the node data for the
-        corresponding nodes.</t>
-
-        <t>If it is a reply which contains node data TLV which is
-        more recent than what we have for the corresponding node,
-        update our state and reset Trickle.</t>
-
-      </section>
-
-      <section title="Data updates">
-
-        <t>Each node is responsible for publishing only a valid set of data
-        in TLVs contained within it's own node data TLV. Whenever the node
-        data TLV's content changes, the update number should be
-        incremented.</t>
-
-
-        <t>If a message containing node state TLV described in <xref
-        target="node-state" /> is received via unicast or multicast with
-        node's own node identifier and higher update number than current,
-        or same update number and different hash, there is a problem in the
-        network. There are two different ways to handle this: the default
-        way to handle it is to make own update number higher than the
-        received one and republish node data using the same node
-        identifier. If this happens more than ID-CONFLICT-COUNT times in
-        ID-CONFLICT-INTERVAL seconds AND the local node identifier
-        is not globally unique, new node identifier should be generated and
-        node data republished with the new node identifier. (This problem
-        is relevant only if not using signatures; collision of node
-        identifier hashes for public keys is not considered here due to low
-        likelihood of it.)</t>
-
-        <t>Regardless of how the node data for ANY node which node has
-        changes, all Trickle instances MUST be considered inconsistent
-        (I=Imin + timer reset).</t>
-      </section>
-
-      <section title="Removal of whole nodes">
-
-        <t>Whenever set of node data has changed, nodes SHOULD do traversal
-        of neighbor graph (by following the neighbor TLVs defined in <xref
-        target="neighbor-tlv" /> from node to node), and after traversing
-        the reachable graph, purge the nodes that weren't traversed as they
-        are no longer reachable. </t>
-
-      </section>
+      <t>All messages are encoded as a sequence of TLV
+      objects described in <xref target="tlvs"/>, with no 
+      fixed fields before or after the sequence. This 
+      section describes which set of TLVs MUST or MAY be
+      present in each message type. </t>
       
-      <section title="Neighbor state maintenance" anchor="neighbor">
-
-        <t>Whenever multicast message or unicast reply is received on a
-        link from another node, the node should be added as neighbor TLV
-        for current node. If nothing (for example - no router
-        advertisements, no HNCP traffic) is received from that neighbor in
-        UNREACHABLE-TIME seconds and the neighbor is not in neighbor
-        discovery cache, at least REACH-ATTEMPTS attempts to ping it with
-        request network state message defined in <xref
-        target="req-net-message" /> SHOULD be sent with increasing timeouts
-        (e.g. 1, 2, 4 seconds). If even after suitable period after the
-        last message nothing is received, the neighbor TLV MUST be removed
-        so that there are no dangling neighbors. As an alternative, if
-        there is a layer 2 unreachability notification of some sort
-        available for either whole link or for individual neighbor, it
-        MAY be used to immediately trigger removal of corresponding
-        neighbor TLV(s).</t>
-      </section>
-
-    </section>
-
-    <section title="Messages">
-
-      <t>Every message is encoded as a sequence of TLV
-      objects described in <xref target="tlvs"/>. Therefore the message
-      definition here defines just the set of TLVs expected in the
-      particular message. 
+      <t>In order to facilitate fast detection of local
+      state vs. that in a received message, all TLVs in every
+      encoding scope (either root level, within the message 
+      itself, or within a container TLV) MUST be placed
+      in ascending order based on the binary comparison of both
+      TLV header and value. <t>By design, the MUST be present 
+      TLVs in this section have the lowest available type values, 
+      ensuring they will naturally occur at the start of the 
+      Protocol Message.
       </t>
       
-      <t>Note that in _every_ encoding scope (either root level within
-      the message itself, or within container TLV), TLVs MUST be in
-      ascending order based on binary comparison of both TLV header and
-      value. Therefore the MUST TLVs listed here, having lowest available
-      type values, and type being the first bytes in the payload, are
-      effectively header of sorts.</t>
-
-      <section title="Network state message (multicast)"
+     
+      <section title="Network State Message (NetState)"
                anchor="net-message">
-        <t>MUST be present:
+               
+        <t>The NetState Message SHOULD be sent as a multicast message.</t>
+               
+        <t>The following TLVs MUST be present at the start of the message:
         <list>
           <t>node link TLV (defined in <xref target="node-id"/>).</t>
           <t>network state TLV (defined in <xref target="net-hash"/>).</t>
@@ -306,9 +211,12 @@ Edit time:     559 min
 
       </section>
 
-      <section title="Request network state message (unicast)"
+      <section title="Network State Message Request, (NetState-Req)"
                anchor="req-net-message">
-        <t>MUST be present:
+               
+        <t>the NetState-Req Message MUST be sent as a unicast message.</t>
+               
+        <t>The following TLVs MUST be present at the start of the message:
         <list>
           <t>node link TLV (defined in <xref target="node-id"/>).</t>
           <t>request network state TLV (defined in <xref target="req-net-hash"/>).</t>
@@ -318,7 +226,10 @@ Edit time:     559 min
         <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
       </section>
-      <section title="Request node(s) data message (unicast)"
+     
+        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
+
+ 	<section title="Request node(s) data message (unicast)"
                anchor="req-node-message">
 
         <t>MUST be present:
@@ -332,7 +243,8 @@ Edit time:     559 min
         <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
 
       </section>
-      <section title="Reply state message (unicast)"
+      
+      <section title="State-Reply (unicast)"
                anchor="reply-message">
         <t>MUST be present:
         <list>
@@ -348,10 +260,110 @@ Edit time:     559 min
         </list>
         </t>
 
-        <t>MAY be present: authentication TLVs (see <xref target="auth-tlvs" />).</t>
+     
+      </section>
+    </section>
 
+
+      <section title="HNCP Protocol Message Processing" anchor="reception">
+      
+        <t>The majority of status updates among known nodes are handled via the Trickle-Driven 
+        updates described in <xref target="trickle-updates"/>. This section describes processing 
+        of messages as received, along with associated actions or responses.
+        
+        <t>HCNP is designed to operate between directly connected neighbors on 
+        a shared link using link-local IPv6 addresses. If the source address 
+        of a received HNCP packet is not an IPv6 link-local unicast address, the
+        packet SHOULD be dropped. Similarly, if the destination address is not
+        IPv6 link-local unicast or IPv6 link-local multicast address,
+        packet SHOULD be dropped.</t>
+        
+        <t>Upon receipt of:</t>
+	<list>
+        <t>NetState Message <xref target="net-message"/>: If the network state hash within the
+        message matches hash of locally stored network state, consider
+        Trickle state as consistent. In that case, there is no need to
+        proceed further. If the hashes do not match, consider Trickle state
+        as inconsistent. In that case, if the message was in "short format"
+        (that is, it contained no node state TLVs), reply with a NetState-Req Message
+        <xref target="req-net-message"/>. If the message
+        was in long format (it contained one or more node state TLVs),
+        reply with NodeState-Req defined in <xref
+        target="req-node-message"/> for any nodes for which local information
+        is outdated (local update number is lower than that within the
+        message) or missing. Note that if local information is more recent than
+        that of the neighbor, there is no need to send a message at all.</t>
+
+        <t>NetState-Req <xref target="req-net-message"/>: Provide requested data in a 
+        State-Reply Message containing Network State TLVs.</t>
+        
+        <t>NodeState-Req <xref target="req-node-message"/>: Provide requested data in a 
+        State-Reply Message containing Node State and Node Data TLVs. </t>
+
+        <t>State-Reply <xref target="reply-message"/>: If the message contains node state TLVs that are more
+        recent than local state (higher update number or we lack the
+        node data altogether), reply with a NodeState-Req 
+        <xref target="req-node-message"/> for the corresponding nodes. If the message contains 
+        node data TLVs which are more recent than the local values for the corresponding node,
+        update local state and reset Trickle.</t>
+	</list>
+
+        <t>Each node is responsible for publishing only a valid set of data
+        in TLVs contained within it's own node data TLV. Whenever the node
+        data TLV's content changes, the update number should be
+        incremented.</t>
+        
+        <t>If a message containing node state TLVs described in <xref
+        target="node-state" /> is received via unicast or multicast with
+        the node's own node identifier and a higher update number than current local value,
+        or the same update number and different hash, there is an error. 
+        A recommended default
+        way to handle this is to attempt to assert local state by increasing the local 
+        update number to a value higher than that received
+        and republish node data using the same node
+        identifier. If this happens more than ID-CONFLICT-COUNT times in
+        ID-CONFLICT-INTERVAL seconds AND the local node identifier
+        is not globally unique, there may be more than one router with the 
+        same node identifier on the network. A new node identifier should be generated and
+        node data republished accordingly. This type of collision is highly unlikely 
+        if a good unique node identifier is being used. If HNCP Security 
+        is enabled, it should be virtually impossible as collision of node
+        identifier hashes for public keys is highly unlikely.</t>
+
+	<t>In all cases, if node data for any node changes, all Trickle instances MUST be considered inconsistent
+        (I=Imin + timer reset).</t>
+        
+      </section>
+
+      <section title="Adding and Removing Reachable Nodes" anchor="neighbor">
+
+        <t>Whenever multicast message or unicast reply is received on a
+        link from another node, the node should be added as neighbor TLV
+        for current node. If nothing (for example - no router
+        advertisements, no HNCP traffic) is received from that neighbor in
+        UNREACHABLE-TIME seconds and the neighbor is not in neighbor
+        discovery cache, at least REACH-ATTEMPTS attempts to ping it with
+        request network state message defined in <xref
+        target="req-net-message" /> SHOULD be sent with increasing timeouts
+        (e.g. 1, 2, 4 seconds). If even after suitable period after the
+        last message nothing is received, the neighbor TLV MUST be removed
+        so that there are no dangling neighbors. As an alternative, if
+        there is a layer 2 unreachability notification of some sort
+        available for either whole link or for individual neighbor, it
+        MAY be used to immediately trigger removal of corresponding
+        neighbor TLV(s).</t>
+      </section>
+      
+      <section title="Purging Unreachable Nodes">
+
+        <t>Whenever set of node data has changed, nodes SHOULD traverse
+        of the neighbor graph by following the neighbor TLVs defined in <xref
+        target="neighbor-tlv" /> from node to node, purging nodes that were 
+        not traversed as they are no longer reachable directly by any neighbor. </t>
 
       </section>
+      
+
     </section>
 
     <section anchor="tlvs" title="Type-Length-Value objects">
@@ -1042,7 +1054,7 @@ Edit time:     559 min
     <section title="Security Considerations">
       
 
-      <t>General security issues for Home Networks is discussed at length
+      <t>General security issues for Home Networks are discussed at length
       in <xref target="I-D.ietf-homenet-arch" />. The protocols used to
       setup IP in home networks today have very little security enabled
       within the control protocol itself. For example, DHCP has defined
