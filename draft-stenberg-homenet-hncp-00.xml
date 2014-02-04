@@ -1,8 +1,8 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Tue Feb  4 11:57:07 2014 mstenber
-Edit time:     548 min
+Last modified: Tue Feb  4 17:44:30 2014 mstenber
+Edit time:     559 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -98,28 +98,31 @@ Edit time:     548 min
       <t>The data model of the HNCP protocol is simple: Every participating node
       has (and also knows for every other participating node):
       <list>
-        <t>A unique node identifier. It may be a public key, unique hardware ID, or
-        some other unique blob of binary data which HCNP can run a hash upon to obtain
-        a node identifer that is very likely unique among the set of routers
-        in the Homenet.</t>
 
-        <t>A set of Type-Length-Value (TLV) data it wants to share with other
-        routers. The set of TLVs have a well-defined order based on ascending 
-        binary content that is used to quickly identify changes in the set as they
-        occur relative to the set in other routers. </t>
+        <t>A unique node identifier. It may be a public key, unique
+        hardware ID, or some other unique blob of binary data which HCNP
+        can run a hash upon to obtain a node identifer that is very likely
+        unique among the set of routers in the Homenet.</t>
 
-        <t>Latest update sequence number. A four octet number that is incremented
-        anytime TLV data changes are detected.</t>
+        <t>A set of Type-Length-Value (TLV) data it wants to share with
+        other routers. The set of TLVs have a well-defined order based on
+        ascending binary content that is used to quickly identify changes
+        in the set as they occur relative to the set in other routers. </t>
 
-        <t>Relative time, in milliseconds, since last publishing of the current TLV data set. </t>
+        <t>Latest update sequence number. A four octet number that is
+        incremented anytime TLV data changes are detected.</t>
+
+        <t>Relative time, in milliseconds, since last publishing of the
+        current TLV data set. </t>
 
       </list>
       </t>
       
-      <t>If HNCP security is enabled, each node will have a public/private key
-      pair defined. The public key is used to encrypt and/or create signatures for messages and
-      node state updates. The private key is used to decrypt and/or verify signatures of
-      messages and node state updates and never sent across the network by HNCP.</t>
+      <t>If HNCP security is enabled, each node will have a public/private
+      key pair defined. The private key is used to create signatures for
+      messages and node state updates and never sent across the network by
+      HNCP. The public key is used to verify signatures of messages and
+      node state updates. </t>
       
     </section>
 
@@ -128,10 +131,10 @@ Edit time:     548 min
       <t>The protocol is designed to run on UDP port IANA-UDP-PORT, using
       both link-local scoped IPv6 unicast and link-local scoped IPv6
       multicast messages to address IANA-MULTICAST-ADDRESS for
-      transport. The protocol consists of Trickle <xref target="RFC6206"/> 
-      driven multicast status messages to indicate changes in shared TLV data, 
-      and unicast state synchronization message exchanges when reacting to the
-      indications. </t>
+      transport. The protocol consists of Trickle <xref target="RFC6206"/>
+      driven multicast status messages to indicate changes in shared TLV
+      data, and unicast state synchronization message exchanges when the
+      Trickle state is found to be inconsistent. </t>
 
       <section title="Trickle-driven Status Updates">
 
@@ -283,7 +286,7 @@ Edit time:     548 min
       type values, and type being the first bytes in the payload, are
       effectively header of sorts.</t>
 
-      <section title="Network state message ((link-local) multicast)"
+      <section title="Network state message (multicast)"
                anchor="net-message">
         <t>MUST be present:
         <list>
@@ -660,8 +663,8 @@ Edit time:     548 min
 	<t>An IPv4-address could be acquired by running a DHCP-client on
         the interface.</t>
 
-	<t>HNCP authentication is enabled and there are routers on the
-        interface which could not be authenticated.</t>
+	<t>HNCP security is enabled and there are routers on the interface
+	which could not be authenticated.</t>
 
       </list>
       </t>
@@ -1061,15 +1064,15 @@ Edit time:     548 min
       protect against malicious attacks and spoofing attempts from inside
       or outside the border. </t>
       
-      <t>In the absence of a shared key or public/private key pair, HNCP
-      itself sends messages as clear text which is as secure, or insecure,
-      as the security of the link below, as discussed in <xref
-      target="I-D.kline-homenet-default-perimeter" />. When no unique
-      public key is available, a hardware fingerprint or equivalent to
-      identify routers must be available for use by HNCP.</t>
+      <t>HNCP itself sends messages as (possibly authenticated) clear text
+      which is as secure, or insecure, as the security of the link below,
+      as discussed in <xref target="I-D.kline-homenet-default-perimeter"
+      />. When no unique public key is available, a hardware fingerprint or
+      equivalent to identify routers must be available for use by HNCP.</t>
       
-      <t>As HNCP messages are sent over UDP/IP, IPsec may be used. However,
-      this requires manually keyed IPsec per-port granularity for port
+      <t>As HNCP messages are sent over UDP/IP, if confidentiality is
+      desired or for some other reason, IPsec may be used. However, this
+      requires manually keyed IPsec per-port granularity for port
       IANA-UDP-PORT UDP traffic.  A pre-shared key has to be utilized in
       this case as well given IKE cannot be used with multicast
       traffic.</t>
@@ -1080,9 +1083,7 @@ Edit time:     548 min
       per-node data TLVs as well as across the entire HNCP message.  In
       this mode, care must be taken in rate limiting verification of
       invalid packets, as otherwise denial of service may occur due to
-      exhaustion of computation resources (unless sufficient cryptographic
-      support is known to be present in the home router).
-      </t>
+      exhaustion of computation resources.</t>
       
       <t>As a performance optimization, instead of providing signatures for
       actual node data and the protocol messages themselves, it is also
