@@ -575,8 +575,9 @@ Edit time:     521 min
       necessary.  The router therefore runs an appropriately configured
       DHCP and DHCPv6-client as long as the interface is active including
       states where it considers the interface to be internal. The router
-      SHOULD wait for a period of TBD seconds before treating a newly
-      activated or previously external interface as internal. Once it
+      SHOULD wait for a reasonable time period in which the DHCP-clients can
+      acquire a lease before treating a newly activated or previously
+      external interface as internal. A value of 5 seconds is suggested. Once it
       treats a certain interface as internal it MUST start forwarding
       traffic with appropriate source addresses between its internal
       interfaces and allow internal traffic to reach external networks.
