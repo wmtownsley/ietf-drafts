@@ -120,32 +120,38 @@ Edit time:     521 min
       <t>The protocol is designed to run on UDP port IANA-UDP-PORT, using
       both link-local scoped IPv6 unicast and link-local scoped IPv6
       multicast messages to address IANA-MULTICAST-ADDRESS for
-      transport. The protocol consists of Trickle-driven multicast status
-      messages, and unicast based neighbor state synchronization
-      exchanges. </t>
+      transport. The protocol consists of Trickle <xref target="RFC6206"/> 
+      driven multicast status messages to indicate changes in shared TLV data, 
+      and unicast state synchronization message exchanges when reacting to the
+      indications. </t>
 
-      <section title="Regular Trickle-driven status updates">
+      <section title="Trickle-driven Status Updates">
 
-        <t>Every node is responsible for sending link-local multicast network
-        state messages defined in <xref target="net-message"/> every time
-        Trickle algorithm defined in <xref target="RFC6206"/> indicates
-        they should on every link the protocol is active on. Separate
-        Trickle state MUST be maintained for each link.</t>
+        <t>Each node is responsible for sending link-local multicast network
+        state messages defined in <xref target="net-message"/> each time
+        the Trickle algorithm defined in <xref target="RFC6206"/> indicates
+        they should on each link the protocol is active on. When the locally 
+        stored network state hash changes (either by a local node 
+        event that affects the TLV data, or upon receipt of more recent data from
+        another node), all Trickle instances MUST be reset. Trickle state MUST 
+        be maintained separately for each link.</t>
 
         <t>Trickle algorithm has 3 parameters; Imin, Imax and k. Imin and
-        Imax represent minimum and maximum values for I, time interval
-        during which at least k Trickle update must be seen on a link to
-        prevent local state transmission. This specification does NOT
-        mandate any defaults, but given the timer reset on data updates,
-        k=1 SHOULD be used (as later retransmissions should handle packet
-        loss in any case). Imax MUST be at least a minute. Imin MUST be at
-        least 200 milliseconds (earliest transmissions may occur at Imin/2
-        = 100 milliseconds given minimum values).</t>
-
-        <t>When locally stored network state hash changes (either by local
-        node TLV state change, or by receiving of more recent data from
-        other nodes), all Trickle instances MUST be reset.</t>
-
+        Imax represent minimum and maximum values for I, which is the time interval
+        during which at least k Trickle updates must be seen on a link to
+        prevent local state transmission.  Bounds for recommended Trickle 
+        values are defined in below. 
+        
+        <list>
+        <t>k=1 SHOULD be used, as given the timer reset on data updates, retransmissions 
+        should handle packet loss.</t>
+       
+        <t>Imax MUST be at least one minute.</t>
+        
+        <t>Imin MUST be at least 200 milliseconds (earliest transmissions may occur at Imin/2
+        = 100 milliseconds given minimum values as per the Trickle algorithm).</t>
+        </list>
+        </t>
       </section>
 
       <section title="Handling of received packets" anchor="reception">
