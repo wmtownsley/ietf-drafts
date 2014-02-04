@@ -280,25 +280,25 @@ Edit time:     559 min
         
         <t>Upon receipt of:
 	<list>
-        <t>NetState Message <xref target="net-message"/>: If the network state hash within the
-        message matches hash of locally stored network state, consider
-        Trickle state as consistent. In that case, there is no need to
-        proceed further. If the hashes do not match, consider Trickle state
-        as inconsistent. In that case, if the message was in "short format"
-        (that is, it contained no node state TLVs), reply with a 
+        <t><xref target="net-message">NetState Message</xref>: If the network state hash within the
+        message matches the hash of the locally stored network state, consider
+        Trickle state as consistent with no further processing required. 
+        If the hashes do not match, consider Trickle state
+        as inconsistent. In this case, if the message is "short"
+        (contains zero node state TLVs), reply with a 
         <xref target="req-net-message">NetState-Req Message</xref>. If the message
-        was in long format (it contained one or more node state TLVs),
+        was in long format (contained all node state TLVs),
         reply with <xref
         target="req-node-message">NodeState-Req</xref> for any nodes for which local information
         is outdated (local update number is lower than that within the
         message) or missing. Note that if local information is more recent than
-        that of the neighbor, there is no need to send a message at all.</t>
+        that of the neighbor, there is no need to send a message.</t>
 
         <t><xref target="req-net-message">NetState-Req</xref>: Provide requested data in a 
-        State-Reply Message containing Network State TLVs.</t>
+        NetNode-Reply Message containing Network State TLVs.</t>
         
         <t><xref target="req-node-message">NodeState-Req</xref>: Provide requested data in a 
-        State-Reply Message containing Node State and Node Data TLVs. </t>
+        NetNode-Reply containing Node State and Node Data TLVs. </t>
 
         <t><xref target="reply-message">State-Reply</xref>: If the message contains node state TLVs that are more
         recent than local state (higher update number or we lack the
@@ -664,24 +664,6 @@ Edit time:     559 min
       described in the <xref target="RFC7084">Basic Requirements for IPv6
       Customer Edge Routers</xref></t>
       
-      <t>An interface MUST be considered external if at least one of the
-      following conditions is satisfied:
-
-      <list style="numbers">
-	<t>The interface has a fixed category classifying it as external.</t>
-
-	<t>A delegated prefix could be acquired by running a DHCPv6-client
-	on the interface.</t>
-
-	<t>An IPv4-address could be acquired by running a DHCP-client on
-        the interface.</t>
-
-	<t>HNCP security is enabled and there are routers on the interface
-	which could not be authenticated.</t>
-
-      </list>
-      </t>
-      
       <t>In order to avoid conflicts between border discovery and homenet
       routers running DHCP-servers each router MUST implement the following
       mechanism based on <xref target="RFC3004">The User Class Option for
@@ -700,14 +682,34 @@ Edit time:     559 min
       </list>
       </t>
       
+      
+      <t>An interface MUST be considered external if at least one of the
+      following conditions is satisfied:
+
+      <list style="numbers">
+	<t>The interface has a fixed category classifying it as external.</t>
+
+	<t>A delegated prefix could be acquired by running a DHCPv6-client
+	on the interface.</t>
+
+	<t>An IPv4-address could be acquired by running a DHCP-client on
+        the interface.</t>
+
+	<t>HNCP security is enabled and there are routers on the interface
+	which could not be authenticated.</t>
+
+      </list>
+      </t>
+    
       <t>Each router MUST continuously scan each active interface that does
       not have a fixed category in order to dynamically reclassify it if
       necessary.  The router therefore runs an appropriately configured
       DHCP and DHCPv6-client as long as the interface is active including
       states where it considers the interface to be internal. The router
-      SHOULD wait for a reasonable time period in which the DHCP-clients can
+      SHOULD wait for a reasonable time period (5 seconds as a suggested default) 
+      in which the DHCP-clients can
       acquire a lease before treating a newly activated or previously
-      external interface as internal. A value of 5 seconds is suggested. Once it
+      external interface as internal. Once it
       treats a certain interface as internal it MUST start forwarding
       traffic with appropriate source addresses between its internal
       interfaces and allow internal traffic to reach external networks.
