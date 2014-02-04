@@ -388,60 +388,155 @@ Edit time:     548 min
 
         <section anchor="req-net-hash" title="Request network state TLV">
 
-          <t>TLV with T=2, empty V.</t>
+      <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |  Type: REQ-NETWORK-STATE (2)  |           Length: 4           |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork>
+      </figure>
 
         </section>
         <section anchor="req-node-data" title="Request node data TLV">
 
-          <t>TLV with T=3, V=H(node identifier).</t>
 
+      <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |    Type: REQ-NODE-DATA (3)    |          Length: 20           |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                       H(node identifier)                      |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork>
+      </figure>
+      
         </section>
 
       </section>
       <section title="Data TLVs (for use in both multi- and unicast data)">
         <section anchor="node-id" title="Node link TLV">
-
-          <t>TLV with T=1, V=H(node identifier) .. link id (4 octets)</t>
+        
+       <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |      Type: NODE-LINK (1)      |          Length: 24           |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                       H(node identifier)                      |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                        Link-Identifier                        |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork>
+      </figure>
 
         </section>
         <section anchor="net-hash" title="Network state TLV">
 
-          <t>TLV with T=4, V=H(H(node data TLV 1) .. H(node data TLV N)).</t>
+       <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |    Type: NETWORK-STATE (4)    |          Length: 20           |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |          H(H(node data TLV 1) .. H(node data TLV N))          |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork>
+      </figure>
           
-          <t>The node data are ordered for hashing by octet comparison of
+          <t>The node data TLVs are ordered for hashing by octet comparison of
           the corresponding node identifier hashes in ascending order.</t>
 
         </section>
         <section anchor="node-state" title="Node state TLV">
+        
+       <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |      Type: NODE-STATE (5)     |          Length: 44           |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                       H(node identifier)                      |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                    Update Sequence Number                     |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                Milliseconds since Origination                 |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                        H(node data TLV)                       |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork>
+      </figure>
 
-          <t>TLV with T=5, V=H(node identifier) .. update # (4 octets)
-          .. milliseconds since origination (4 octets) .. H(node data TLV)</t>
-
-          <t>Whole network should have roughly same idea about the time
-          since origination; even the originating router should increment
-          the time whenever it needs to send new node state TLV regarding
-          itself without changing the corresponding node data TLV. It is
-          not included within node data TLV, however, as that is immutable
+          <t>The whole network should have roughly the same idea about the time
+          since origination, i.e. even the originating router should increment
+          the time whenever it needs to send a new node state TLV regarding
+          itself without changing the corresponding node data TLV. This age value
+          is not included within the node data TLV, however, as that is immutable
           and potentially signed by the originating node at the time of
           origination.</t>
 
         </section>
         <section anchor="node-data" title="Node data TLV">
 
-          <t>TLV with T=6, V=H(node identifier) .. update # (4 octets) .. a
-          set of sub-TLVs.</t>
+       <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |      Type: NODE-DATA (6)      |        Length: >= 24          |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                       H(node identifier)                      |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                    Update Sequence Number                     |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |            Nested TLVs containing node information            |
+        </artwork>
+      </figure>
 
-          <t>Public key TLV (described in <xref target="node-pk-tlv" />
+          <t>The public key TLV (described in <xref target="node-pk-tlv" />)
           SHOULD be always included if signatures are ever used. </t>
-          <t>If signatures in use, the node data TLV SHOULD also contain
-          originator's own signature TLV. </t>
+          <t>If signatures are in use, the node data TLV SHOULD also contain
+          the originator's own signature TLV.</t>
         </section>
 
 
         <section anchor="node-pk-tlv" title="Node public key TLV (within
                                              node data TLV)">
-          <t>TLV with T=7, V=public key (=raw node identifier)</t>
 
+      <figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |     Type: PUBLIC-KEY (7)      |          Length: >= 4         |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |               Public Key (raw node identifier)                |
+        </artwork>
+      </figure>                                             
           <t>Public key data for the node. Only relevant if signatures are
           used. Can be used to verify that H(node identifier) equals public
           key, and that the signature TLV within node data matches public
@@ -450,12 +545,31 @@ Edit time:     548 min
         </section>
 
         <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
-          <t>TLV with T=8, V=H(neighbor node identifier)  .. neighbor link id (4 octets).. local link id (4 octets)</t>
+	<figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |       Type: NEIGHBOR (8)      |          Length: 28           |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                                                               |
+          |                  H(neighbor node identifier)                  |
+          |                                                               |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                    Neighbor Link Identifier                   |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                      Local Link Identifier                    |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        </artwork>
+      </figure>
+
           <t>This TLV indicates that the node in question vouches that the
           specified neighbor is reachable by it on the local link id
           given. This reachability may be unidirectional (if no unicast
-          exchanges have been performed with the neighbor). The TLV at least 
-          guarantees that the node publishing the TLV has received traffic
+          exchanges have been performed with the neighbor).
+          The presence of this TLV at least 
+          guarantees that the node publishing it has received traffic
           from the neighbor recently. For guaranteed bidirectional
           reachability, existence of both nodes' matching neighbor TLVs
           should be checked. </t>
@@ -464,7 +578,20 @@ Edit time:     548 min
       </section>
 
       <section anchor="user-tlv" title="Custom TLV (within/without node data TLV)">
-        <t>TLV with T=9, V=H-64(URI) .. opaque data</t>
+	<figure>
+        <artwork>
+          0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |     Type: CUSTOM-DATA (9)     |         Length: >= 12         |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                            H-64(URI)                          |
+          |                                                               |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                          Opaque Data                          |
+        </artwork>
+      </figure>
+      
         <t>This TLV can be used to contain anything; the URI used should be
         under control of the author of that specification. 
         For example:</t>
@@ -758,16 +885,16 @@ Edit time:     548 min
             0                   1                   2                   3
             0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            |      Type=50                  |           Length              |
+            | Type: DNS-DELEGATED-ZONE (50) |        Length: >= 21          |
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
             |                                                               |
-            |                           Address                             |
-            |                          (16 bytes)                           |
+            |                            Address                            |
+            |                                                               |
             |                                                               |
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            |Reserved   |S|B| Zone (DNS label sequence - variable length)   |
-            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            DNS Delegated Zone TLV
+            | Reserved  |S|B|                                               |
+            +-+-+-+-+-+-+-+-+  Zone (DNS label sequence - variable length)  |
+            |                                                               |
           </artwork>
         </figure>
       </section>
@@ -779,11 +906,10 @@ Edit time:     548 min
             0                   1                   2                   3
             0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            |      Type=51                  |           Length              |
+            |    Type: DOMAIN-NAME (51)     |         Length: >= 4          |
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            |Domain (DNS label sequence - variable length)                  |
+            |        Domain (DNS label sequence - variable length)          |
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            Domain Name TLV
           </artwork>
         </figure>
 
@@ -794,11 +920,10 @@ Edit time:     548 min
             0                   1                   2                   3
             0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            |      Type=52                  |           Length              |
+            |    Type: ROUTER-NAME (52)     |         Length: >= 4          |
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            |Name (not even null terminated - variable length)              |
+            |         Name (not null-terminated - variable length)          |
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-            Router Name TLV
           </artwork>
         </figure>
       </section>
