@@ -321,21 +321,20 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         TLVs. When there is a change in a node's set of
         data TLVs, the update number MUST be incremented accordingly.</t>
         
-        <t>If a message containing <xref
-        target="node-state">node state TLVs</xref> is received via unicast or multicast with
-        the node's own node identifier and a higher update number than current local value,
-        or the same update number and different hash, there is an error. 
-        A recommended default
-        way to handle this is to attempt to assert local state by increasing the local 
-        update number to a value higher than that received
-        and republish node data using the same node
-        identifier. If this happens more than ID-CONFLICT-COUNT times in
-        ID-CONFLICT-INTERVAL seconds and the local node identifier
-        is not globally unique, there may be more than one router with the 
-        same node identifier on the network. A new node identifier should be generated and
-        node data republished accordingly. If HNCP security 
-        is enabled, this is event is highly unlikely to occur as 
-        identifier hashes for public keys is highly unlikely.</t>
+        <t>If a message containing <xref target="node-state">node state
+        TLVs</xref> is received via unicast or multicast with the node's
+        own node identifier and a higher update number than current local
+        value, or the same update number and different hash, there is an
+        error.  A recommended default way to handle this is to attempt to
+        assert local state by increasing the local update number to a value
+        higher than that received and republish node data using the same
+        node identifier. If this happens more than 3 times in 60 seconds
+        and the local node identifier is not globally unique, there may be
+        more than one router with the same node identifier on the
+        network. A new node identifier SHOULD be generated and node data
+        republished accordingly. If HNCP security is enabled, this is event
+        is highly unlikely to occur as collision of identifier hashes for
+        public keys is highly unlikely.</t>
 
 	<t>In all cases, if node data for any node changes, all Trickle instances MUST be considered inconsistent
         (I=Imin + timer reset).</t>
@@ -348,17 +347,16 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         link from another node, the node should be added as neighbor TLV
         for current node. If nothing (for example - no router
         advertisements, no HNCP traffic) is received from that neighbor in
-        UNREACHABLE-TIME seconds and the neighbor is not in neighbor
-        discovery cache, at least REACH-ATTEMPTS attempts to ping it with
-        <xref
-        target="req-net-message">request network state message</xref> SHOULD be sent with increasing timeouts
-        (e.g. 1, 2, 4 seconds). If even after suitable period after the
-        last message nothing is received, the neighbor TLV MUST be removed
-        so that there are no dangling neighbors. As an alternative, if
-        there is a layer 2 unreachability notification of some sort
-        available for either whole link or for individual neighbor, it
-        MAY be used to immediately trigger removal of corresponding
-        neighbor TLV(s).</t>
+        Imax seconds and the neighbor is not in neighbor discovery cache,
+        at least 3 attempts to ping it with <xref
+        target="req-net-message">request network state message</xref>
+        SHOULD be sent with increasing timeouts (e.g. 1, 2, 4 seconds). If
+        even after suitable period after the last message nothing is
+        received, the neighbor TLV MUST be removed so that there are no
+        dangling neighbors. As an alternative, if there is a layer 2
+        unreachability notification of some sort available for either whole
+        link or for individual neighbor, it MAY be used to immediately
+        trigger removal of corresponding neighbor TLV(s).</t>
       </section>
       
       <section title="Purging Unreachable Nodes">
@@ -889,7 +887,6 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           |                                                               |
           |                                                               |
           +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 	</artwork>
       </figure>	
       
@@ -1117,23 +1114,6 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
     </section>
 
-    <section anchor="const" title="Protocol constants">
-      <t>Imin (for Trickle) >= 200 milliseconds</t>
-      <t>Imax (for Trickle) >= 60 seconds</t>
-      <t>k (for Trickle) suggested to be 1</t>
-
-      <t>ID-CONFLICT-COUNT and ID-CONFLICT-INTERVAL are left up
-      to the implementation (they are local choices)</t>
-
-      <t>UNREACHABLE-TIME should be proportional with Imax
-      (smaller values not useful; orders of magnitude larger values
-      neither). Again local choice.</t>
-
-      <t>REACH-ATTEMPTS should depend on media used, but at least
-      'few', e.g. 3 times.</t>
-
-    </section>
-    
     <section anchor="iana" title="IANA Considerations">
       
       <t>IANA should set up a registry (policy TBD) for HNCP TLV types, with following
