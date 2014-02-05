@@ -72,7 +72,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       target="I-D.stenberg-homenet-dnssd-hybrid-proxy-network-zeroconf"
       />. </t>
       
-      <t>HCNP is designed to provide enough information for
+      <t>HNCP is designed to provide enough information for
       a routing protocol to operate without homenet-specific
       extensions. In homenet environments where multiple IPv6 prefixes are
       present, routing based on source and destination address is
@@ -80,14 +80,14 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       requirements for source and destination routing are described in
       section 3 of <xref
       target="I-D.baker-rtgwg-src-dst-routing-use-cases" />. </t>
-        
+      
       <t>A GPLv2-licensed implementation of the HNCP protocol is
       currently under development at <eref
       target="https://github.com/sbyx/hnetd/">https://github.com/sbyx/hnetd/</eref>. 
       Comments and/or pull requests are welcome.</t> 
       
       <t> An earlier implementation using many of the same 
-      principles, algorithms and data structures but within OSPFv3 is
+      principles, algorithms and data structures built within OSPFv3 is
       available at <eref target="http://www.homewrt.org/doku.php?id=downloads">
       http://www.homewrt.org/doku.php?id=downloads</eref>.
       </t>
@@ -109,7 +109,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       <list>
 
         <t>A unique node identifier. It may be a public key, unique
-        hardware ID, or some other unique blob of binary data which HCNP
+        hardware ID, or some other unique blob of binary data which HNCP
         can run a hash upon to obtain a node identifer that is very likely
         unique among the set of routers in the Homenet.</t>
 
@@ -137,7 +137,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
     <section title="Operation">
 
-      <t>The protocol is designed to run on UDP port IANA-UDP-PORT, using
+      <t>HNCP is designed to run on UDP port IANA-UDP-PORT, using
       both link-local scoped IPv6 unicast and link-local scoped IPv6
       multicast messages to address IANA-MULTICAST-ADDRESS for
       transport. The protocol consists of <xref target="RFC6206">Trickle</xref> 
@@ -175,111 +175,112 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       </section>
 
 
-    <section title="Protocol Messages">
+      <section title="Protocol Messages">
 
-      <t>Protocol messages are encoded as purely as a sequence of <xref target="tlvs">TLV
-      objects</xref>. This section describes which set of TLVs MUST or MAY be present
-      in a given message. </t>
-      
-      <t>In order to facilitate fast comparing of local
-      state with that in a received message update, all TLVs in every
-      encoding scope (either root level, within the message 
-      itself, or within a container TLV) MUST be placed
-      in ascending order based on the binary comparison of both
-      TLV header and value. By design, the
-      TLVs which MUST be present have the lowest available type values, 
-      ensuring they will naturally occur at the start of the 
-      Protocol Message, resembling a fixed format preamble.
-      </t>
-      
-     
-      <section title="Network State Update (NetState)"
-               anchor="net-message">
-               
-        <t>This Message SHOULD be sent as a multicast message.</t>
-               
-        <t>The following TLVs MUST be present at the start of the message:
-        <list>
-          <t><xref target="node-id">node link TLV</xref>.</t>
-          <t><xref target="net-hash">network state TLV</xref>.</t>
-        </list>
+        <t>Protocol messages are encoded as purely as a sequence of <xref target="tlvs">TLV
+        objects</xref>. This section describes which set of TLVs MUST or MAY be present
+        in a given message. </t>
+        
+        <t>In order to facilitate fast comparing of local
+        state with that in a received message update, all TLVs in every
+        encoding scope (either root level, within the message 
+        itself, or within a container TLV) MUST be placed
+        in ascending order based on the binary comparison of both
+        TLV header and value. By design, the
+        TLVs which MUST be present have the lowest available type values, 
+        ensuring they will naturally occur at the start of the 
+        Protocol Message, resembling a fixed format preamble.
         </t>
+        
+        
+        <section title="Network State Update (NetState)"
+                 anchor="net-message">
+          
+          <t>This Message SHOULD be sent as a multicast message.</t>
+          
+          <t>The following TLVs MUST be present at the start of the message:
+          <list>
+            <t><xref target="node-id">node link TLV</xref>.</t>
+            <t><xref target="net-hash">network state TLV</xref>.</t>
+          </list>
+          </t>
 
-	<t>The NetState Message MAY contain <xref target="node-state">node state TLV(s)</xref>.
-	If so, either all node state TLVs are included (referred to as a "long" NetState Message), or 
-	none are included (refered to as a "short" NetState Message). The NetState Message
-	MUST NOT contain only a portion of node state TLVs as this could cause problems with the
-	<xref target="reception"> Protocol Message Processing</xref> algorithm. Finally, if
-	the long version of the NetState message would exceed the minimum IPv6 MTU when sent, the short 
-	version of the NetState message MUST be used instead.</t>
-	
-        <t>If HCNP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
+	  <t>The NetState Message MAY contain <xref target="node-state">node state TLV(s)</xref>.
+	  If so, either all node state TLVs are included (referred to as a "long" NetState Message), or 
+	  none are included (refered to as a "short" NetState Message). The NetState Message
+	  MUST NOT contain only a portion of node state TLVs as this could cause problems with the
+	  <xref target="reception"> Protocol Message Processing</xref> algorithm. Finally, if
+	  the long version of the NetState message would exceed the minimum IPv6 MTU when sent, the short 
+	  version of the NetState message MUST be used instead.</t>
+	  
+          <t>If HNCP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
 
-      </section>
+        </section>
 
-      <section title="Network State Request, (NetState-Req)"
-               anchor="req-net-message">
-               
-	<t>This Message MUST be sent as a unicast message.</t>
+        <section title="Network State Request, (NetState-Req)"
+                 anchor="req-net-message">
+          
+	  <t>This Message MUST be sent as a unicast message.</t>
 
-        <t>The following TLVs MUST be present at the start of the message:
-        <list>
-          <t><xref target="node-id">node link TLV</xref>.</t>
-          <t><xref target="req-net-hash">request network state TLV</xref>.</t>
-        </list>
-        </t>
+          <t>The following TLVs MUST be present at the start of the message:
+          <list>
+            <t><xref target="node-id">node link TLV</xref>.</t>
+            <t><xref target="req-net-hash">request network state TLV</xref>.</t>
+          </list>
+          </t>
 
-        <t>If HCNP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
+          <t>If HNCP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
 
-      </section>
+        </section>
 
  	<section title="Node Data Request (Node-Req)"
-               anchor="req-node-message">
+                 anchor="req-node-message">
 
-        <t>This Message MUST be sent as a unicast message.</t>
+          <t>This Message MUST be sent as a unicast message.</t>
 
-        <t>MUST be present:
-        <list>
-          <t><xref target="node-id">node link TLV</xref>.</t>
-          <t>one or more <xref
-          target="req-node-data">request node data TLVs</xref>.</t>
-        </list>
-        </t>
+          <t>MUST be present:
+          <list>
+            <t><xref target="node-id">node link TLV</xref>.</t>
+            <t>one or more <xref
+            target="req-node-data">request node data TLVs</xref>.</t>
+          </list>
+          </t>
 
-        <t>MAY be present: <xref target="auth-tlvs">authentication TLVs</xref>.</t>
+          <t>If HNCP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
 
+        </section>
+        
+        <section title="Network and Node State Reply (NetNode-Reply)"
+                 anchor="reply-message">
+          
+	  <t>This Message MUST be sent as a unicast message.</t>
+          
+          <t>MUST be present:
+          <list>
+            <t><xref target="node-id">node link TLV</xref>.</t>
+
+            <t><xref target="net-hash">network state TLV</xref>
+            and <xref target="node-state">node state TLV</xref> for
+            every known node by the sender, or</t>
+
+            <t>one or more combinations of node state and <xref target="node-data">node data TLVs</xref>.</t>
+
+          </list>
+          </t>
+
+          <t>If HNCP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
+
+        </section>
       </section>
-      
-      <section title="Network and Node State Reply (NetNode-Reply)"
-               anchor="reply-message">
-               
-	<t>This Message MUST be sent as a unicast message.</t>
-               
-        <t>MUST be present:
-        <list>
-          <t><xref target="node-id">node link TLV</xref>.</t>
-
-          <t><xref target="net-hash">network state TLV</xref>
-          and <xref target="node-state">node state TLV</xref> for
-          every known node by the sender, or</t>
-
-          <t>one or more combinations of node state and <xref target="node-data">node data TLVs</xref>.</t>
-
-        </list>
-        </t>
-
-     
-      </section>
-    </section>
 
 
       <section title="HNCP Protocol Message Processing" anchor="reception">
-      
+        
         <t>The majority of status updates among known nodes are handled via the <xref target="trickle-updates">Trickle-Driven 
         updates </xref>. This section describes processing 
 	of messages as received, along with associated actions or responses.</t>
         
-        <t>HCNP is designed to operate between directly connected neighbors on 
+        <t>HNCP is designed to operate between directly connected neighbors on 
         a shared link using link-local IPv6 addresses. If the source address 
         of a received HNCP packet is not an IPv6 link-local unicast address, the
         packet SHOULD be dropped. Similarly, if the destination address is not
@@ -288,32 +289,32 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         
         <t>Upon receipt of:
 	<list>
-        <t><xref target="net-message">NetState Message</xref>: If the network state hash within the
-        message matches the hash of the locally stored network state, consider
-        Trickle state as consistent with no further processing required. 
-        If the hashes do not match, consider Trickle state
-        as inconsistent. In this case, if the message is "short"
-        (contains zero node state TLVs), reply with a 
-        <xref target="req-net-message">NetState-Req Message</xref>. If the message
-        was in long format (contained all node state TLVs),
-        reply with <xref
-        target="req-node-message">NodeState-Req</xref> for any nodes for which local information
-        is outdated (local update number is lower than that within the
-        message) or missing. Note that if local information is more recent than
-        that of the neighbor, there is no need to send a message.</t>
+          <t><xref target="net-message">NetState Message</xref>: If the network state hash within the
+          message matches the hash of the locally stored network state, consider
+          Trickle state as consistent with no further processing required. 
+          If the hashes do not match, consider Trickle state
+          as inconsistent. In this case, if the message is "short"
+          (contains zero node state TLVs), reply with a 
+          <xref target="req-net-message">NetState-Req Message</xref>. If the message
+          was in long format (contained all node state TLVs),
+          reply with <xref
+          target="req-node-message">NodeState-Req</xref> for any nodes for which local information
+          is outdated (local update number is lower than that within the
+          message) or missing. Note that if local information is more recent than
+          that of the neighbor, there is no need to send a message.</t>
 
-        <t><xref target="req-net-message">NetState-Req</xref>: Provide requested data in a 
-        NetNode-Reply Message containing Network State TLVs.</t>
-        
-        <t><xref target="req-node-message">NodeState-Req</xref>: Provide requested data in a 
-        NetNode-Reply containing Node State and Node Data TLVs. </t>
+          <t><xref target="req-net-message">NetState-Req</xref>: Provide requested data in a 
+          NetNode-Reply Message containing Network State TLVs.</t>
+          
+          <t><xref target="req-node-message">NodeState-Req</xref>: Provide requested data in a 
+          NetNode-Reply containing Node State and Node Data TLVs. </t>
 
-        <t><xref target="reply-message">State-Reply</xref>: If the message contains node state TLVs that are more
-        recent than local state (higher update number or we lack the
-        node data altogether), reply with a 
-        <xref target="req-node-message">NodeState-Req</xref> for the corresponding nodes. If the message contains 
-        node data TLVs which are more recent than the local values for the corresponding node,
-        update local state and reset Trickle.</t>
+          <t><xref target="reply-message">State-Reply</xref>: If the message contains node state TLVs that are more
+          recent than local state (higher update number or we lack the
+          node data altogether), reply with a 
+          <xref target="req-node-message">NodeState-Req</xref> for the corresponding nodes. If the message contains 
+          node data TLVs which are more recent than the local values for the corresponding node,
+          update local state and reset Trickle.</t>
 	</list>
 	</t>
 
@@ -415,22 +416,22 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
         <section anchor="req-net-hash" title="Request network state TLV">
 
-      <figure>
-        <artwork>
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Type: REQ-NETWORK-STATE (2)  |           Length: 4           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        </artwork>
-      </figure>
+            </artwork>
+          </figure>
 
         </section>
         <section anchor="req-node-data" title="Request node data TLV">
 
 
-      <figure>
-        <artwork>
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -441,17 +442,17 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 |                                                               |
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        </artwork>
-      </figure>
-      
+            </artwork>
+          </figure>
+          
         </section>
 
       </section>
       <section title="Data TLVs (for use in both multi- and unicast data)">
         <section anchor="node-id" title="Node link TLV">
-        
-       <figure>
-        <artwork>
+          
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -464,14 +465,14 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Link-Identifier                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        </artwork>
-      </figure>
+            </artwork>
+          </figure>
 
         </section>
         <section anchor="net-hash" title="Network state TLV">
 
-       <figure>
-        <artwork>
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -482,17 +483,17 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 |                                                               |
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        </artwork>
-      </figure>
+            </artwork>
+          </figure>
           
           <t>The node data TLVs are ordered for hashing by octet comparison of
           the corresponding node identifier hashes in ascending order.</t>
 
         </section>
         <section anchor="node-state" title="Node state TLV">
-        
-       <figure>
-        <artwork>
+          
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -512,8 +513,8 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 |                                                               |
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        </artwork>
-      </figure>
+            </artwork>
+          </figure>
 
           <t>The whole network should have roughly the same idea about the time
           since origination, i.e. even the originating router should increment
@@ -526,8 +527,8 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         </section>
         <section anchor="node-data" title="Node data TLV">
 
-       <figure>
-        <artwork>
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -541,8 +542,8 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 |                    Update Sequence Number                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |            Nested TLVs containing node information            |
-        </artwork>
-      </figure>
+            </artwork>
+          </figure>
 
           <t>The public key TLV (described in <xref target="node-pk-tlv" />)
           SHOULD be always included if signatures are ever used. </t>
@@ -554,16 +555,16 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         <section anchor="node-pk-tlv" title="Node public key TLV (within
                                              node data TLV)">
 
-      <figure>
-        <artwork>
+          <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |     Type: PUBLIC-KEY (7)      |          Length: >= 4         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |               Public Key (raw node identifier)                |
-        </artwork>
-      </figure>                                             
+            </artwork>
+          </figure>                                             
           <t>Public key data for the node. Only relevant if signatures are
           used. Can be used to verify that H(node identifier) equals public
           key, and that the signature TLV within node data matches public
@@ -572,8 +573,8 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         </section>
 
         <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
-	<figure>
-        <artwork>
+	  <figure>
+            <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -588,8 +589,8 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Local Link Identifier                    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-        </artwork>
-      </figure>
+            </artwork>
+          </figure>
 
           <t>This TLV indicates that the node in question vouches that the
           specified neighbor is reachable by it on the local link id
@@ -606,7 +607,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
       <section anchor="user-tlv" title="Custom TLV (within/without node data TLV)">
 	<figure>
-        <artwork>
+          <artwork>
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -616,9 +617,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Opaque Data                          |
-        </artwork>
-      </figure>
-      
+          </artwork>
+        </figure>
+        
         <t>This TLV can be used to contain anything; the URI used should be
         under control of the author of that specification. 
         For example:</t>
@@ -659,13 +660,13 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
     <section title="Border Discovery and Prefix Assignment">
 
-      <t>Automatic discovery of perimeter borders is desirable - where
-      possible - to ease the configuration of the homenet.  HNCP utilizes the
+      <t>Using  
       <xref target="I-D.kline-homenet-default-perimeter">Default Border
-      Definition</xref> and extends it with a border discovery algorithm
-      derived from the edge router interactions
+      Definition</xref> as a basis, this section defines border discovery algorithm
+      specifics derived from the edge router interactions
       described in the <xref target="RFC7084">Basic Requirements for IPv6
-      Customer Edge Routers</xref></t>
+      Customer Edge Routers</xref>. The algorithm is designed to work for
+      both IPv4 and IPv6 (single or dual-stack). </t>
       
       <t>In order to avoid conflicts between border discovery and homenet
       routers running DHCP-servers each router MUST implement the following
@@ -703,13 +704,13 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
       </list>
       </t>
-    
+      
       <t>Each router MUST continuously scan each active interface that does
       not have a fixed category in order to dynamically reclassify it if
       necessary.  The router therefore runs an appropriately configured
       DHCP and DHCPv6-client as long as the interface is active including
       states where it considers the interface to be internal. The router
-      SHOULD wait for a reasonable time period (5 seconds as a suggested default) 
+      SHOULD wait for a reasonable time period (5 seconds as a possible default) 
       in which the DHCP-clients can
       acquire a lease before treating a newly activated or previously
       external interface as internal. Once it
