@@ -1231,6 +1231,10 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       other hand, N*(N-1)/2 unicast reachability checks when lot of routers
       share a link is not appealing either.</t>
 
+      <t>Should we use something else than MD5 as hash? It IS somewhat
+      insecure; however signature stuff (TBD) should rely on it mainly for
+      security in any case, and MD5 is used in a non-security role.</t>
+
     </section>
     <section title="Some Obvious Questions and Answers">
       <t>Q: Why not use TCP?</t>
@@ -1255,10 +1259,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       node's TLV data. On some link layers unicast is also much more
       reliable than multicast, especially for large packets.</t>
 
-      <t>Q: Why so long IDs? Why real hash?</t>
+      <t>Q: Why so long IDs? Why real hash even in insecure mode?</t>
 
-      <t>A: Specifying conflict detection for smaller IDs was harder, and
-      scalability of protocol isn't really affected by using real
+      <t>A: Scalability of protocol isn't really affected by using real
       (=cryptographic) hash function.</t>
 
       <t>Q: Why trust IPv6 fragmentation in unicast case? Why not do L7
@@ -1293,7 +1296,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
     <section title="Acknowledgements">
 
       <t>Thanks to Ole Troan, Pierre Pfister, Mark Baugher, Mark Townsley
-      and Juliusz Chroboczek for review comments.</t>
+      and Juliusz Chroboczek for their contributions to the draft.</t>
 
     </section>
     
