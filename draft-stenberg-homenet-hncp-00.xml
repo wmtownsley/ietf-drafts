@@ -82,8 +82,18 @@ Edit time:     559 min
       requirements for source and destination routing are described in
       section 3 of <xref
       target="I-D.baker-rtgwg-src-dst-routing-use-cases" />. </t>
+        
+      <t>A GPLv2-licensed implementation of the HNCP protocol is
+      currently under development at <eref
+      target="https://github.com/sbyx/hnetd/">https://github.com/sbyx/hnetd/</eref>. 
+      Comments and/or pull requests are welcome.</t> 
       
-      
+      <t> An earlier implementation using many of the same 
+      principles, algorithms and data structures but within OSPFv3 is
+      available at <eref target="http://www.homewrt.org/doku.php?id=downloads">
+      http://www.homewrt.org/doku.php?id=downloads</eref>.
+      </t>
+    </section>
       
     </section>
     
@@ -140,8 +150,8 @@ Edit time:     559 min
 
       <section title="Trickle-Driven Status Updates" anchor="trickle-updates">
 
-        <t>Each node MUST send link-local multicast <xref target="net-message">network state messages</xref>
-        each time the <xref target="RFC6206">Trickle algorithm</xref> defined in indicates they should
+        <t>Each node MUST send link-local multicast <xref target="net-message">NetState Messages</xref></xref>
+        each time the <xref target="RFC6206">Trickle algorithm</xref> indicates they should
         on each link the protocol is active on. When the locally stored
         network state hash changes (either by a local node event that
         affects the TLV data, or upon receipt of more recent data from
@@ -152,7 +162,7 @@ Edit time:     559 min
         Imax represent minimum and maximum values for I, which is the time interval
         during which at least k Trickle updates must be seen on a link to
         prevent local state transmission.  Bounds for recommended Trickle 
-        values are defined in below. 
+        values are described below. 
         
         <list>
           <t>k=1 SHOULD be used, as given the timer reset on data updates, retransmissions 
@@ -173,7 +183,7 @@ Edit time:     559 min
       objects</xref>. This section describes which set of TLVs MUST or MAY be present
       in a given message. </t>
       
-      <t>In order to facilitate fast comparison of local
+      <t>In order to facilitate fast comparing of local
       state with that in a received message update, all TLVs in every
       encoding scope (either root level, within the message 
       itself, or within a container TLV) MUST be placed
@@ -309,10 +319,9 @@ Edit time:     559 min
 	</list>
 	</t>
 
-        <t>Each node is responsible for publishing only a valid set of data
-        in TLVs contained within it's own node data TLV. Whenever the node
-        data TLV's content changes, the update number should be
-        incremented.</t>
+        <t>Each node is responsible for publishing a valid set of data
+        TLVs. When there is a change in a node's set of
+        data TLVs, the update number MUST be incremented accordingly.</t>
         
         <t>If a message containing <xref
         target="node-state">node state TLVs</xref> is received via unicast or multicast with
@@ -323,12 +332,11 @@ Edit time:     559 min
         update number to a value higher than that received
         and republish node data using the same node
         identifier. If this happens more than ID-CONFLICT-COUNT times in
-        ID-CONFLICT-INTERVAL seconds AND the local node identifier
+        ID-CONFLICT-INTERVAL seconds and the local node identifier
         is not globally unique, there may be more than one router with the 
         same node identifier on the network. A new node identifier should be generated and
-        node data republished accordingly. This type of collision is highly unlikely 
-        if a good unique node identifier is being used. If HNCP Security 
-        is enabled, it should be virtually impossible as collision of node
+        node data republished accordingly. If HNCP security 
+        is enabled, this is event is highly unlikely to occur as 
         identifier hashes for public keys is highly unlikely.</t>
 
 	<t>In all cases, if node data for any node changes, all Trickle instances MUST be considered inconsistent
@@ -336,7 +344,7 @@ Edit time:     559 min
         
       </section>
 
-      <section title="Adding and Removing Reachable Nodes" anchor="neighbor">
+      <section title="Adding and Removing Neighbors" anchor="neighbor">
 
         <t>Whenever multicast message or unicast reply is received on a
         link from another node, the node should be added as neighbor TLV
@@ -357,14 +365,14 @@ Edit time:     559 min
       
       <section title="Purging Unreachable Nodes">
 
-        <t>Whenever set of node data has changed, nodes SHOULD traverse
-        of the neighbor graph by following the <xref
-        target="neighbor-tlv">neighbor TLVs</xref> from node to node, purging nodes that were 
-        not traversed as they are no longer reachable directly by any neighbor. </t>
+        <t>Nodes should be purged when unreachable. 
+        When node data has changed, the neighbor graph SHOULD be traversed for each node
+        following the <xref
+        target="neighbor-tlv">neighbor TLVs</xref>, purging nodes that 
+        were found entirely unreachable (not traversed). </t>
 
       </section>
       
-
     </section>
 
     <section anchor="tlvs" title="Type-Length-Value objects">
@@ -1072,26 +1080,27 @@ Edit time:     559 min
       to the shipping system to take advantage of the protocol constructs
       defined.</t>
       
-      <t>HNCP is designed to integrate with <xref target="I-D.behringer-homenet-trust-bootstrap">trusted bootstrapping</xref>
+      <t>HNCP is designed to integrate with 
+      <xref target="I-D.behringer-homenet-trust-bootstrap">trusted bootstrapping</xref>
       including the ability to authenticate messages between nodes.  This
       authentication can be used to securely define a border as well as
       protect against malicious attacks and spoofing attempts from inside
       or outside the border. </t>
       
       <t>HNCP itself sends messages as (possibly authenticated) clear text
-      which is as secure, or insecure, as the security of the link below,
+      which is as secure, or insecure, as the security of the link below
       as discussed in <xref target="I-D.kline-homenet-default-perimeter"
       />. When no unique public key is available, a hardware fingerprint or
       equivalent to identify routers must be available for use by HNCP.</t>
       
-      <t>As HNCP messages are sent over UDP/IP, if confidentiality is
-      desired or for some other reason, IPsec may be used. However, this
+      <t>As HNCP messages are sent over UDP/IP, IPsec may be used for 
+      confidentiality or additional message authenitation. However, this
       requires manually keyed IPsec per-port granularity for port
-      IANA-UDP-PORT UDP traffic.  A pre-shared key has to be utilized in
-      this case as well given IKE cannot be used with multicast
+      IANA-UDP-PORT UDP traffic.  Also, a pre-shared key has to be utilized in
+      this case given IKE cannot be used with multicast
       traffic.</t>
       
-      <t>If no router can be trusted and more guarantees about source of
+      <t>If no router can be trusted and additional guarantees about source of
       node status updates is necessary, real public and private keys should
       be used to create signatures and verify them in HNCP on both on
       per-node data TLVs as well as across the entire HNCP message.  In
@@ -1129,7 +1138,7 @@ Edit time:     559 min
     
     <section anchor="iana" title="IANA Considerations">
       
-      <t>IANA should set up a registry for HNCP TLV types, with following
+      <t>IANA should set up a registry (policy TBD) for HNCP TLV types, with following
       initial contents:</t>
 
       <t>0: Reserved (should not happen on wire)</t>
@@ -1154,8 +1163,8 @@ Edit time:     559 min
       <t>60: Routing protocol</t>
       <t>65535: Signature</t>
 
-      <t>IANA should also allocate UDP port number IANA-UDP-PORT, as well as
-      IPv6 link-local multicast address IANA-MULTICAST-ADDRESS for HNCP use.</t>
+      <t>HNCP will also require allocation of a UDP port number IANA-UDP-PORT, as well as
+      IPv6 link-local multicast address IANA-MULTICAST-ADDRESS.</t>
 
     </section>
 
@@ -1214,7 +1223,7 @@ Edit time:     559 min
       <?rfc include="reference.I-D.draft-arkko-homenet-prefix-assignment-04.xml"?>
       <?rfc include="reference.I-D.draft-stenberg-homenet-dnssdext-hybrid-proxy-ospf-00.xml"?>
     </references>
-    <section title="TODO">
+    <section title="Some Outstanding Issues">
 
       <t>Should we use MD5 hashes, or EUI-64 node identifier to identify
       nodes?</t>
@@ -1230,7 +1239,7 @@ Edit time:     559 min
       share a link is not appealing either.</t>
 
     </section>
-    <section title="Q &amp; A">
+    <section title="Some Obvious Questions and Answers">
       <t>Q: Why not use TCP?</t>
 
       <t>A: It doesn't address the node discovery problem. It also leads to
@@ -1286,18 +1295,6 @@ Edit time:     559 min
       target="https://github.com/fingon/ietf-drafts/">https://github.com/fingon/ietf-drafts/</eref>
       in source format (with nice Makefile too). Feel free to send comments
       and/or pull requests if and when you have changes to it! </t>
-    </section>
-
-    <section title="Implementation">
-
-      <t>A GPLv2-licensed experimental work-in-progress implementation of the protocol is
-      available at <eref
-      target="https://github.com/sbyx/hnetd/">https://github.com/sbyx/hnetd/</eref>. Comments
-      and/or pull requests are welcome too.</t>
-      
-      <t>An earlier implementation of the same principles and similar algorithms on top of OSPFv3 is
-      available at <eref target="http://www.homewrt.org/doku.php?id=downloads">http://www.homewrt.org/doku.php?id=downloads</eref>.
-      </t>
     </section>
 
     <section title="Acknowledgements">
