@@ -4,8 +4,8 @@
 # Author: Markus Stenberg <markus stenberg@iki.fi>
 #
 # Created:       Mon Jun 17 04:40:32 2013 mstenber
-# Last modified: Fri Jan 31 18:49:37 2014 mstenber
-# Edit time:     12 min
+# Last modified: Wed Feb  5 08:54:55 2014 mstenber
+# Edit time:     13 min
 #
 
 DRAFTS=\
@@ -20,6 +20,10 @@ all: $(DRAFTS)
 
 %.txt: %.xml
 	XML_LIBRARY=$(XML_LIBRARY) xml2rfc $< --text --html
+
+%.xml.artwork: %.xml
+	python fix-artwork.py < $< > $@
+	mv $@ $<
 
 push: all
 	git push
