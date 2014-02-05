@@ -695,7 +695,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 	"HOMENET".</t>
 
 	<t>A homenet router running a DHCP-server on a homenet-interface
-        MUST ignore DHCP-Requests containing a DHCP User-Class consisting
+        MUST ignore or reject DHCP-Requests containing a DHCP User-Class consisting
         of the ASCII-String "HOMENET".</t>
 
       </list>
@@ -791,9 +791,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       
       <t>Each delegated prefix is encoded using one TLV inside an
       EXTERNAL-CONNECTION TLV. For external IPv4 connections the prefix is
-      encoded in the form of an IPv4-mapped address and is usually from a
-      <xref target="RFC1597">private address range</xref>. The related TLV
-      is defined as follows.</t>
+      encoded in the form of an <xref target="RFC4291">IPv4-mapped address</xref>
+      and is usually from a <xref target="RFC1597">private address range</xref>.
+      The related TLV is defined as follows.</t>
       
       <figure>
 	<artwork>
@@ -865,7 +865,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 	  <t>Link Identifier is the local HNCP identifier of the link the
           prefix is assigned to.</t>
 
-	  <t>R. is reserved for future additions and must be set to 0 when
+	  <t>R. is reserved for future additions and MUST be set to 0 when
           creating TLVs and ignored when parsing them.</t>
 
 	  <t>A is the authoritative flag which indicates that an assigment
@@ -1211,6 +1211,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       <?rfc include="reference.RFC.3315.xml"?>
       <?rfc include="reference.RFC.3633.xml"?>
       <?rfc include="reference.RFC.1597.xml"?>
+      <?rfc include="reference.RFC.4291.xml"?>
       <?rfc include="reference.I-D.draft-ietf-homenet-arch-11.xml"?>
       <?rfc include="reference.I-D.draft-troan-homenet-sadr-01.xml"?>
       <?rfc include="reference.I-D.draft-behringer-homenet-trust-bootstrap-00.xml"?>
