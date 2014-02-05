@@ -1,8 +1,6 @@
 <?xml version='1.0' ?>
 <!--
 Created:       Mon Nov 18 17:55:22 2013 mstenber
-Last modified: Tue Feb  4 17:44:30 2014 mstenber
-Edit time:     559 min
 -->
 
 <!DOCTYPE rfc SYSTEM 'rfc2629.dtd'>
@@ -93,7 +91,6 @@ Edit time:     559 min
       available at <eref target="http://www.homewrt.org/doku.php?id=downloads">
       http://www.homewrt.org/doku.php?id=downloads</eref>.
       </t>
-    </section>
       
     </section>
     
@@ -150,9 +147,10 @@ Edit time:     559 min
 
       <section title="Trickle-Driven Status Updates" anchor="trickle-updates">
 
-        <t>Each node MUST send link-local multicast <xref target="net-message">NetState Messages</xref></xref>
-        each time the <xref target="RFC6206">Trickle algorithm</xref> indicates they should
-        on each link the protocol is active on. When the locally stored
+        <t>Each node MUST send link-local multicast <xref
+        target="net-message">NetState Messages</xref> each time the <xref
+        target="RFC6206">Trickle algorithm</xref> indicates they should on
+        each link the protocol is active on. When the locally stored
         network state hash changes (either by a local node event that
         affects the TLV data, or upon receipt of more recent data from
         another node), all Trickle instances MUST be reset. Trickle state
