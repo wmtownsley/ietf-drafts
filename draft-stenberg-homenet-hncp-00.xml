@@ -684,9 +684,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       both IPv4 and IPv6 (single or dual-stack). </t>
       
       <t>In order to avoid conflicts between border discovery and homenet
-      routers running DHCP- or DHCPv6-PD-servers each router MUST implement the following
+      routers running <xref target="RFC2131">DHCP</xref> or <xref target="RFC3633">DHCPv6-PD</xref> servers each router MUST implement the following
       mechanism based on <xref target="RFC3004">The User Class Option for
-      DHCP</xref> or its DHCPv6 counterpart respectively into its DHCP and DHCPv6-logic:
+      DHCP</xref> or its <xref target="RFC3315">DHCPv6 counterpart</xref> respectively into its DHCP and DHCPv6-logic:
 
       <list>
 
@@ -1207,6 +1207,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       <?rfc include="reference.RFC.7084.xml"?>
       <?rfc include="reference.RFC.3004.xml"?>
       <?rfc include="reference.RFC.3118.xml"?>
+      <?rfc include="reference.RFC.2131.xml"?>
+      <?rfc include="reference.RFC.3315.xml"?>
+      <?rfc include="reference.RFC.3633.xml"?>
       <?rfc include="reference.RFC.1597.xml"?>
       <?rfc include="reference.I-D.draft-ietf-homenet-arch-11.xml"?>
       <?rfc include="reference.I-D.draft-troan-homenet-sadr-01.xml"?>
