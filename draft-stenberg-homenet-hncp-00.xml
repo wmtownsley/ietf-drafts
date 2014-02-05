@@ -116,7 +116,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         <t>A set of Type-Length-Value (TLV) data it wants to share with
         other routers. The set of TLVs have a well-defined order based on
         ascending binary content that is used to quickly identify changes
-        in the set as they occur relative to the set in other routers. </t>
+        in the set as they occur. </t>
 
         <t>Latest update sequence number. A four octet number that is
         incremented anytime TLV data changes are detected.</t>
@@ -200,20 +200,25 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           
           <t>The following TLVs MUST be present at the start of the message:
           <list>
-            <t><xref target="node-id">node link TLV</xref>.</t>
-            <t><xref target="net-hash">network state TLV</xref>.</t>
+            <t><xref target="node-id">Node Link TLV</xref>.</t>
+            <t><xref target="net-hash">Network State TLV</xref>.</t>
           </list>
           </t>
 
-	  <t>The NetState Message MAY contain <xref target="node-state">node state TLV(s)</xref>.
-	  If so, either all node state TLVs are included (referred to as a "long" NetState Message), or 
-	  none are included (refered to as a "short" NetState Message). The NetState Message
-	  MUST NOT contain only a portion of node state TLVs as this could cause problems with the
-	  <xref target="reception"> Protocol Message Processing</xref> algorithm. Finally, if
-	  the long version of the NetState message would exceed the minimum IPv6 MTU when sent, the short 
-	  version of the NetState message MUST be used instead.</t>
+	  <t>The NetState Message MAY contain <xref
+	  target="node-state">Node State TLV(s)</xref>.  If so, either all
+	  Node State TLVs are included (referred to as a "long" NetState
+	  Message), or none are included (refered to as a "short" NetState
+	  Message). The NetState Message MUST NOT contain only a portion of
+	  Node State TLVs as this could cause problems with the <xref
+	  target="reception"> Protocol Message Processing</xref>
+	  algorithm. Finally, if the long version of the NetState message
+	  would exceed the minimum IPv6 MTU when sent, the short version of
+	  the NetState message MUST be used instead.</t>
 	  
-          <t>If HNCP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
+          <t>If HNCP security is enabled, <xref
+          target="auth-tlvs">authentication TLVs</xref> MUST be
+          present.</t>
 
         </section>
 
@@ -224,12 +229,14 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
           <t>The following TLVs MUST be present at the start of the message:
           <list>
-            <t><xref target="node-id">node link TLV</xref>.</t>
-            <t><xref target="req-net-hash">request network state TLV</xref>.</t>
+            <t><xref target="node-id">Node Link TLV</xref>.</t>
+            <t><xref target="req-net-hash">Request Network State TLV</xref>.</t>
           </list>
           </t>
 
-          <t>If HNCP security is enabled, <xref target="auth-tlvs">authentication TLVs</xref> MUST be present.</t>
+          <t>If HNCP security is enabled, <xref
+          target="auth-tlvs">authentication TLVs</xref> MUST be
+          present.</t>
 
         </section>
 
@@ -240,9 +247,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
           <t>MUST be present:
           <list>
-            <t><xref target="node-id">node link TLV</xref>.</t>
+            <t><xref target="node-id">Node Link TLV</xref>.</t>
             <t>one or more <xref
-            target="req-node-data">request node data TLVs</xref>.</t>
+            target="req-node-data">Request Node Data TLVs</xref>.</t>
           </list>
           </t>
 
@@ -257,13 +264,13 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           
           <t>MUST be present:
           <list>
-            <t><xref target="node-id">node link TLV</xref>.</t>
+            <t><xref target="node-id">Node Link TLV</xref>.</t>
 
-            <t><xref target="net-hash">network state TLV</xref>
-            and <xref target="node-state">node state TLV</xref> for
+            <t><xref target="net-hash">Network State TLV</xref>
+            and <xref target="node-state">Node State TLV</xref> for
             every known node by the sender, or</t>
 
-            <t>one or more combinations of node state and <xref target="node-data">node data TLVs</xref>.</t>
+            <t>one or more combinations of Node State and <xref target="node-data">Node Data TLVs</xref>.</t>
 
           </list>
           </t>
@@ -289,32 +296,38 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         
         <t>Upon receipt of:
 	<list>
-          <t><xref target="net-message">NetState Message</xref>: If the network state hash within the
-          message matches the hash of the locally stored network state, consider
-          Trickle state as consistent with no further processing required. 
-          If the hashes do not match, consider Trickle state
-          as inconsistent. In this case, if the message is "short"
-          (contains zero node state TLVs), reply with a 
-          <xref target="req-net-message">NetState-Req Message</xref>. If the message
-          was in long format (contained all node state TLVs),
-          reply with <xref
-          target="req-node-message">NodeState-Req</xref> for any nodes for which local information
-          is outdated (local update number is lower than that within the
-          message) or missing. Note that if local information is more recent than
-          that of the neighbor, there is no need to send a message.</t>
+          <t><xref target="net-message">NetState Message</xref>: If the
+          network state hash within the message matches the hash of the
+          locally stored network state, consider Trickle state as
+          consistent with no further processing required.  If the hashes do
+          not match, consider Trickle state as inconsistent. In this case,
+          if the message is "short" (contains zero Node State TLVs), reply
+          with a <xref target="req-net-message">NetState-Req
+          Message</xref>. If the message was in long format (contained all
+          Node State TLVs), reply with <xref
+          target="req-node-message">NodeState-Req</xref> for any nodes for
+          which local information is outdated (local update number is lower
+          than that within the message) or missing. Note that if local
+          information is more recent than that of the neighbor, there is no
+          need to send a message.</t>
 
-          <t><xref target="req-net-message">NetState-Req</xref>: Provide requested data in a 
-          NetNode-Reply Message containing Network State TLVs.</t>
+          <t><xref target="req-net-message">NetState-Req</xref>: Provide
+          requested data in a NetNode-Reply Message containing Network
+          State TLV and all Node State TLVs.</t>
           
-          <t><xref target="req-node-message">NodeState-Req</xref>: Provide requested data in a 
-          NetNode-Reply containing Node State and Node Data TLVs. </t>
+          <t><xref target="req-node-message">NodeState-Req</xref>: Provide
+          requested data in a NetNode-Reply containing Node State and Node
+          Data TLVs. </t>
 
-          <t><xref target="reply-message">State-Reply</xref>: If the message contains node state TLVs that are more
-          recent than local state (higher update number or we lack the
-          node data altogether), reply with a 
-          <xref target="req-node-message">NodeState-Req</xref> for the corresponding nodes. If the message contains 
-          node data TLVs which are more recent than the local values for the corresponding node,
-          update local state and reset Trickle.</t>
+          <t><xref target="reply-message">State-Reply</xref>: If the
+          message contains Node State TLVs that are more recent than local
+          state (higher update number or we lack the node data altogether),
+          if the message also contains corresponding Node Data TLVs, update
+          local state and reset Trickle. If the message is lacking Node
+          Data TLVs for some Node State TLVs which are more recent than
+          local state, reply with a <xref
+          target="req-node-message">NodeState-Req</xref> for the
+          corresponding nodes. </t>
 	</list>
 	</t>
 
@@ -322,20 +335,21 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
         TLVs. When there is a change in a node's set of
         data TLVs, the update number MUST be incremented accordingly.</t>
         
-        <t>If a message containing <xref target="node-state">node state
+        <t>If a message containing <xref target="node-state">Node State
         TLVs</xref> is received via unicast or multicast with the node's
         own node identifier and a higher update number than current local
         value, or the same update number and different hash, there is an
-        error.  A recommended default way to handle this is to attempt to
-        assert local state by increasing the local update number to a value
-        higher than that received and republish node data using the same
-        node identifier. If this happens more than 3 times in 60 seconds
-        and the local node identifier is not globally unique, there may be
-        more than one router with the same node identifier on the
-        network. A new node identifier SHOULD be generated and node data
-        republished accordingly. If HNCP security is enabled, this is event
-        is highly unlikely to occur as collision of identifier hashes for
-        public keys is highly unlikely.</t>
+        error somewhere.  A recommended default way to handle this is to
+        attempt to assert local state by increasing the local update number
+        to a value higher than that received and republish node data using
+        the same node identifier. If this happens more than 3 times in 60
+        seconds and the local node identifier is not globally unique, there
+        may be more than one router with the same node identifier on the
+        network. If HNCP security is not enabled, a new node identifier
+        SHOULD be generated and node data republished accordingly. If HNCP
+        security is enabled, this is event is highly unlikely to occur as
+        collision of identifier hashes for public keys is highly
+        unlikely.</t>
 
 	<t>In all cases, if node data for any node changes, all Trickle instances MUST be considered inconsistent
         (I=Imin + timer reset).</t>
@@ -345,28 +359,28 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       <section title="Adding and Removing Neighbors" anchor="neighbor">
 
         <t>Whenever multicast message or unicast reply is received on a
-        link from another node, the node should be added as neighbor TLV
-        for current node. If nothing (for example - no router
-        advertisements, no HNCP traffic) is received from that neighbor in
-        Imax seconds and the neighbor is not in neighbor discovery cache,
-        at least 3 attempts to ping it with <xref
+        link from another node, the node should be added as <xref
+        target="neighbor-tlv">Neighbor TLV</xref> for current node. If
+        nothing (for example - no router advertisements, no HNCP traffic)
+        is received from that neighbor in Imax seconds and the neighbor is
+        not in neighbor discovery cache (and L2 indication of presence is
+        available), at least 3 attempts to ping it with <xref
         target="req-net-message">request network state message</xref>
         SHOULD be sent with increasing timeouts (e.g. 1, 2, 4 seconds). If
         even after suitable period after the last message nothing is
-        received, the neighbor TLV MUST be removed so that there are no
+        received, the Neighbor TLV MUST be removed so that there are no
         dangling neighbors. As an alternative, if there is a layer 2
         unreachability notification of some sort available for either whole
         link or for individual neighbor, it MAY be used to immediately
-        trigger removal of corresponding neighbor TLV(s).</t>
+        trigger removal of corresponding Neighbor TLV(s).</t>
       </section>
       
       <section title="Purging Unreachable Nodes">
 
-        <t>Nodes should be purged when unreachable. 
-        When node data has changed, the neighbor graph SHOULD be traversed for each node
-        following the <xref
-        target="neighbor-tlv">neighbor TLVs</xref>, purging nodes that 
-        were found entirely unreachable (not traversed). </t>
+        <t>Nodes should be purged when unreachable.  When node data has
+        changed, the neighbor graph SHOULD be traversed for each node
+        following the Neighbor TLVs, purging nodes that were found entirely
+        unreachable (not traversed). </t>
 
       </section>
       
@@ -414,7 +428,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
       <section title="Request TLVs (for use within unicast requests)">
 
-        <section anchor="req-net-hash" title="Request network state TLV">
+        <section anchor="req-net-hash" title="Request Network State TLV">
 
           <figure>
             <artwork>
@@ -427,7 +441,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           </figure>
 
         </section>
-        <section anchor="req-node-data" title="Request node data TLV">
+        <section anchor="req-node-data" title="Request Node Data TLV">
 
 
           <figure>
@@ -449,7 +463,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
       </section>
       <section title="Data TLVs (for use in both multi- and unicast data)">
-        <section anchor="node-id" title="Node link TLV">
+        <section anchor="node-id" title="Node Link TLV">
           
           <figure>
             <artwork>
@@ -469,7 +483,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           </figure>
 
         </section>
-        <section anchor="net-hash" title="Network state TLV">
+        <section anchor="net-hash" title="Network State TLV">
 
           <figure>
             <artwork>
@@ -486,11 +500,11 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
             </artwork>
           </figure>
           
-          <t>The node data TLVs are ordered for hashing by octet comparison of
+          <t>The Node Data TLVs are ordered for hashing by octet comparison of
           the corresponding node identifier hashes in ascending order.</t>
 
         </section>
-        <section anchor="node-state" title="Node state TLV">
+        <section anchor="node-state" title="Node State TLV">
           
           <figure>
             <artwork>
@@ -516,16 +530,16 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
             </artwork>
           </figure>
 
-          <t>The whole network should have roughly the same idea about the time
-          since origination, i.e. even the originating router should increment
-          the time whenever it needs to send a new node state TLV regarding
-          itself without changing the corresponding node data TLV. This age value
-          is not included within the node data TLV, however, as that is immutable
-          and potentially signed by the originating node at the time of
-          origination.</t>
+          <t>The whole network should have roughly the same idea about the
+          time since origination, i.e. even the originating router should
+          increment the time whenever it needs to send a new Node State TLV
+          regarding itself without changing the corresponding Node Data
+          TLV. This age value is not included within the Node Data TLV,
+          however, as that is immutable and potentially signed by the
+          originating node at the time of origination.</t>
 
         </section>
-        <section anchor="node-data" title="Node data TLV">
+        <section anchor="node-data" title="Node Data TLV">
 
           <figure>
             <artwork>
@@ -545,15 +559,15 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
             </artwork>
           </figure>
 
-          <t>The public key TLV (described in <xref target="node-pk-tlv" />)
+          <t>The <xref target="node-pk-tlv">Node Public Key TLV</xref>
           SHOULD be always included if signatures are ever used. </t>
-          <t>If signatures are in use, the node data TLV SHOULD also contain
-          the originator's own signature TLV.</t>
+          <t>If signatures are in use, the Node Data TLV SHOULD also contain
+          the originator's own <xref target="sig-tlv">Signature TLV</xref>.</t>
         </section>
 
 
-        <section anchor="node-pk-tlv" title="Node public key TLV (within
-                                             node data TLV)">
+        <section anchor="node-pk-tlv" title="Node Public Key TLV (within
+                                             Node Data TLV)">
 
           <figure>
             <artwork>
@@ -565,14 +579,15 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 |               Public Key (raw node identifier)                |
             </artwork>
           </figure>                                             
+
           <t>Public key data for the node. Only relevant if signatures are
           used. Can be used to verify that H(node identifier) equals public
-          key, and that the signature TLV within node data matches public
-          key. </t>
+          key, and that the Signature TLVs are signed by appropriate public
+          keys.</t>
 
         </section>
 
-        <section anchor="neighbor-tlv" title="Neighbor TLV (within node data TLV)">
+        <section anchor="neighbor-tlv" title="Neighbor TLV (within Node Data TLV)">
 	  <figure>
             <artwork>
 0                   1                   2                   3
@@ -599,13 +614,13 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           The presence of this TLV at least 
           guarantees that the node publishing it has received traffic
           from the neighbor recently. For guaranteed bidirectional
-          reachability, existence of both nodes' matching neighbor TLVs
+          reachability, existence of both nodes' matching Neighbor TLVs
           should be checked. </t>
         </section>
 
       </section>
 
-      <section anchor="user-tlv" title="Custom TLV (within/without node data TLV)">
+      <section anchor="user-tlv" title="Custom TLV (within/without Node Data TLV)">
 	<figure>
           <artwork>
 0                   1                   2                   3
@@ -643,15 +658,15 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
           minimum MTU.</t>
 
         </section>
-        <section title="Signature TLV">
+        <section anchor="sig-tlv" title="Signature TLV">
 
           <t>TLV with T=0xFFFF, V=(TBD) public key algorithm based
           signature of all TLVs within current scope as well as the parent
           TLV header, if any. The assumed signature key is private key
           matching the public key of the the originator of node link TLV
           (if signature TLV is within main body of message), or that of the
-          originator of the node data TLV (if signature TLV is within node
-          data TLV)..</t>
+          originator of the node data TLV (if signature TLV is within Node
+          Data TLV)..</t>
 
         </section>
       </section>
