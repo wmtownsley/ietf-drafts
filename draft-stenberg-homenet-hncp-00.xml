@@ -684,9 +684,9 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
       both IPv4 and IPv6 (single or dual-stack). </t>
       
       <t>In order to avoid conflicts between border discovery and homenet
-      routers running DHCP-servers each router MUST implement the following
+      routers running DHCP- or DHCPv6-PD-servers each router MUST implement the following
       mechanism based on <xref target="RFC3004">The User Class Option for
-      DHCP</xref> into its DHCP-logic:
+      DHCP</xref> or its DHCPv6 counterpart respectively into its DHCP and DHCPv6-logic:
 
       <list>
 
@@ -1047,7 +1047,7 @@ Created:       Mon Nov 18 17:55:22 2013 mstenber
 
       <section title="Fallback Mechanism">
 	<t>In cases where there is no commonly understood routing protocol a fallback algorithm is run to setup routing and preserve interoperability among the homenet.
-	While not intended to replace a routing protocol this mechanism provides a valid - but not necessarily ideal - routing topology.
+	While not intended to replace a routing protocol this mechanism provides a valid - but not necessarily optimal - routing topology.
 	It solely relies on the uplink and neighbour information exchanged by HNCP itself 
 	and therefore does not require any additional data exchange. The algorithm is defined as follows:
 	
